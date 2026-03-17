@@ -1,0 +1,52 @@
+@reference "../index.css";
+
+.hero-section {
+  @apply relative h-screen flex items-end justify-center overflow-hidden pb-40;
+}
+
+.hero-bg {
+  @apply absolute inset-0 z-0;
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-overlay-dark {
+  @apply absolute inset-0 bg-black/20;
+}
+
+.hero-overlay-gradient {
+  @apply absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent h-full;
+}
+
+.hero-content {
+  @apply container mx-auto px-6 max-w-7xl relative z-10 text-center;
+}
+
+.hero-title {
+  @apply text-6xl md:text-[12rem] font-black tracking-tighter leading-none text-white;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+}
+
+.hero-title-accent {
+  @apply text-primary;
+}
+
+.university-tag {
+  @apply flex items-center gap-6;
+}
+
+.tag-line {
+  @apply h-[1px] w-20 bg-white/30;
+}
+
+.tag-text {
+  @apply text-sm md:text-base font-bold tracking-[0.8em] uppercase text-white/60;
+}
+
+.scroll-indicator {
+  @apply absolute bottom-10 left-1/2 -translate-x-1/2 z-10 hidden md:block;
+}
+
+.scroll-line {
+  @apply w-[1px] h-16 bg-gradient-to-b from-primary to-transparent;
+}

@@ -1,0 +1,68 @@
+@reference "../index.css";
+
+.nav-container {
+  @apply fixed top-10 left-0 right-0 z-50 px-6 transition-all duration-500;
+}
+
+.nav-container-scrolled {
+  @apply top-6;
+}
+
+.nav-dock {
+  @apply mx-auto max-w-5xl flex items-center justify-between p-2 pl-6 glass shadow-2xl relative overflow-hidden transition-all duration-500;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(3, 7, 18, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 100px;
+}
+
+.nav-dock-scrolled {
+  @apply max-w-2xl px-4 py-1;
+  border: 1px solid rgba(0, 122, 204, 0.4); /* Deeper Blue Border on scroll */
+  background: rgba(3, 7, 18, 0.9);
+  box-shadow: 0 0 30px rgba(0, 122, 204, 0.2);
+}
+
+/* The Sliding Background Card */
+.nav-link-bg {
+  @apply absolute top-1.5 bottom-1.5 bg-primary/20 rounded-full border border-primary/20;
+  z-index: 0;
+}
+
+.nav-links {
+  @apply flex items-center gap-2 relative z-10;
+}
+
+.nav-link {
+  @apply px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 relative rounded-full;
+}
+
+.nav-link-active {
+  @apply text-white;
+}
+
+.nav-link-inactive {
+  @apply text-white/40 hover:text-white/70;
+}
+
+.nav-logo-area {
+  @apply flex items-center gap-3 relative z-10;
+}
+
+.nav-action-area {
+  @apply h-full relative z-10;
+}
+
+.dock-btn {
+  @apply bg-white text-black text-[10px] font-black tracking-widest px-8 py-3 rounded-full 
+         transition-all duration-300 hover:bg-accent hover:text-white;
+}
+
+/* Mobile HUD Overlay */
+.mobile-hud {
+  @apply fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-12;
+}
+
+.hud-item {
+  @apply text-4xl font-black mb-8 hover:text-accent transition-colors tracking-tighter;
+}

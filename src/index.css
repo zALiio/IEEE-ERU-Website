@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #005b98;
+  --color-primary-glow: rgba(0, 91, 152, 0.5);
+  --color-accent: #007acc;
+  --color-gold: rgba(212, 175, 55, 0.6);
+  --color-gold-glow: rgba(212, 175, 55, 0.1);
+  --color-background: #030712;
+  --color-foreground: #f8fafc;
+  
+  --font-heading: "Outfit", sans-serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+@utility glass {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}
+
+@utility glass-pill {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+
+@layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+  body {
+    @apply bg-background text-foreground overflow-x-hidden;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white font-bold py-3 px-8 rounded-lg transition-all 
+           shadow-[0_4px_14px_0_var(--color-primary-glow)] 
+           hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(0,91,152,0.4)]
+           active:scale-95;
+  }
+
+  .glow-text {
+    background: linear-gradient(135deg, #fff 0%, var(--color-accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px var(--color-primary-glow));
+  }
+
+  .ornament {
+    @apply border border-gold/30 relative p-8;
+  }
+
+  .ornament::before, .ornament::after {
+    content: "◈";
+    @apply absolute bg-background text-gold w-5 h-5 flex items-center justify-center text-[10px];
+  }
+
+  .ornament::before { @apply -top-2.5 -left-2.5; }
+  .ornament::after { @apply -bottom-2.5 -right-2.5; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-background); }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
