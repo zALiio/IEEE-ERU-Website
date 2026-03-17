@@ -83,33 +83,17 @@ const About = () => {
             className="codex-visual"
           >
             <div className="energy-core-wrapper">
-              {/* Dense Pulsing Waves */}
-              {[1, 2, 3, 4, 5].map((i) => (
-                <motion.div
-                  key={i}
-                  className="energy-wave"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{
-                    scale: [0.8, 2.2],
-                    opacity: [0.3, 0.6, 0],
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    delay: i * 0.6,
-                    ease: "linear",
-                  }}
-                />
-              ))}
+              {/* Optimized Waves - Now handled by CSS for better performance */}
+              <div className="energy-wave wave-1" />
+              <div className="energy-wave wave-2" />
+              <div className="energy-wave wave-3" />
+              <div className="energy-wave wave-4" />
               
               <motion.div 
                 className="core-logo-container"
-                animate={{ 
-                  y: [0, -15, 0],
-                  scale: [1, 1.05, 1]
-                }}
+                animate={{ y: [0, -10, 0] }}
                 transition={{ 
-                  duration: 5, 
+                  duration: 4, 
                   repeat: Infinity, 
                   ease: "easeInOut" 
                 }}

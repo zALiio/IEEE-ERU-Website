@@ -106,40 +106,45 @@
   }
 }
 
-/* Energy Pulse Logo Visual - MAX Impact */
+/* Energy Pulse Logo Visual - Bulletproof Centering */
 .energy-core-wrapper {
-  @apply relative w-full max-w-[850px] md:max-w-[650px] aspect-square flex items-center justify-center;
+  @apply relative w-full max-w-[320px] md:max-w-[500px] aspect-square flex items-center justify-center mx-auto;
 }
 
 .energy-wave {
-  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border-2 border-primary/40 rounded-full;
-  background: radial-gradient(circle, transparent 40%, rgba(0, 122, 204, 0.05) 100%);
+  @apply absolute inset-0 border border-primary/30 rounded-full;
   pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  transform-origin: center;
+}
+
+/* Optimized CSS Keyframes - Centered by default due to inset-0 */
+.wave-1 { animation: ripple-v2 4s linear infinite; }
+.wave-2 { animation: ripple-v2 4s linear 1s infinite; }
+.wave-3 { animation: ripple-v2 4s linear 2s infinite; }
+.wave-4 { animation: ripple-v2 4s linear 3s infinite; }
+
+@keyframes ripple-v2 {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { opacity: 0.4; }
+  100% { transform: scale(2.4); opacity: 0; }
 }
 
 .core-logo-container {
-  @apply relative z-10 w-64 md:w-96 aspect-square flex items-center justify-center bg-[#030712] rounded-full border-2 border-primary/20;
+  @apply relative z-10 w-72 md:w-80 aspect-square flex items-center justify-center bg-[#030712] rounded-full border-2 border-primary/20;
   box-shadow: 
-    0 0 120px rgba(0, 91, 152, 0.5),
-    inset 0 0 50px rgba(0, 91, 152, 0.2);
+    0 0 70px rgba(0, 91, 152, 0.4),
+    inset 0 0 30px rgba(0, 91, 152, 0.2);
 }
 
 .codex-logo-pulsing {
-  @apply w-[75%] h-[75%] object-contain;
-  filter: drop-shadow(0 0 35px rgba(0, 91, 152, 0.9));
-}
-
-
-.core-specs-v2 {
-  @apply absolute -bottom-12 md:-bottom-20 flex flex-col items-center gap-2 opacity-60 text-center;
-}
-
-.spec-unit, .spec-status {
-  @apply text-[10px] font-black tracking-[0.5em] uppercase text-primary;
+  @apply w-[70%] h-[70%] object-contain;
+  filter: drop-shadow(0 0 15px rgba(0, 91, 152, 0.7));
 }
 
 /* Background Effects */
 .about-wave-bg {
-  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] -z-10 opacity-30 pointer-events-none;
+  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 opacity-20 pointer-events-none;
   background: radial-gradient(circle at center, rgba(0, 122, 204, 0.1) 0%, transparent 70%);
 }
