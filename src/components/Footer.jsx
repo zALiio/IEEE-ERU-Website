@@ -1,21 +1,58 @@
+import { motion } from 'framer-motion'
+import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from 'lucide-react'
+import flag from '../assets/img/falg-white.webp'
+import '../styles/Footer.css'
+
 const Footer = () => {
   return (
-    <footer className="py-12 border-t border-white/5 bg-black/20 mt-20">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold font-heading tracking-tight">IEEE <span className="text-accent">ERU</span></span>
-          </div>
+    <footer className="footer-section">
+      <div className="footer-container">
+        <div className="footer-grid">
           
-          <div className="flex gap-8 text-gray-400 text-sm">
-            <a href="#" className="hover:text-white transition-colors">Facebook</a>
-            <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
-            <a href="#" className="hover:text-white transition-colors">Instagram</a>
+          <div className="footer-logo-area">
+            <motion.img 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              src={flag} 
+              alt="IEEE ERU Logo" 
+              className="footer-logo" 
+            />
+            <p className="footer-mission">
+              IEEE Egyptian Russian University is a hub for innovation, leadership, and technical excellence. 
+              Join a global network of over 400,000 members worldwide.
+            </p>
           </div>
 
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} IEEE ERU Student Branch.
-          </p>
+          <div>
+            <h4 className="footer-links-title">Quick Links</h4>
+            <ul className="footer-list">
+              <li><a href="/" className="footer-link">Home</a></li>
+              <li><a href="/about" className="footer-link">About Us</a></li>
+              <li><a href="/events" className="footer-link">Events</a></li>
+              <li><a href="/committees" className="footer-link">Committees</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="footer-links-title">Connect</h4>
+            <ul className="footer-list text-white/50 text-sm">
+              <li className="flex items-center gap-3"><MapPin size={16} /> ERU University, Badr City</li>
+              <li className="flex items-center gap-3"><Phone size={16} /> +20 123 456 7890</li>
+              <li className="flex items-center gap-3"><Mail size={16} /> info@ieee-eru.org</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div className="footer-bottom">
+          <p className="footer-copy">© 2026 IEEE ERU. Designed by IEEE ERU Developers Team.</p>
+          <div className="footer-socials">
+             <a href="#" className="social-icon-link"><Facebook size={20} /></a>
+             <a href="#" className="social-icon-link"><Twitter size={20} /></a>
+             <a href="#" className="social-icon-link"><Instagram size={20} /></a>
+             <a href="#" className="social-icon-link"><Linkedin size={20} /></a>
+          </div>
         </div>
       </div>
     </footer>

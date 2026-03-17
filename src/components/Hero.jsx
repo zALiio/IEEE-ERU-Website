@@ -32,11 +32,24 @@ const Hero = () => {
             transition={{ delay: 0.6 }}
             className="university-tag"
           >
-            <div className="tag-line" />
-            <span className="tag-text">
-              Egyptian Russian University
-            </span>
-            <div className="tag-line" />
+            <motion.div 
+               initial={{ scaleX: 0, originX: 0 }}
+               animate={{ scaleX: 1 }}
+               transition={{ delay: 0.8, duration: 1 }}
+               className="tag-line-left" 
+            />
+            
+            <div className="tag-text-container">
+              <span className="tag-text-main">Egyptian Russian</span>
+              <span className="tag-text-sub">University</span>
+            </div>
+
+            <motion.div 
+               initial={{ scaleX: 0, originX: 1 }}
+               animate={{ scaleX: 1 }}
+               transition={{ delay: 0.8, duration: 1 }}
+               className="tag-line-right" 
+            />
           </motion.div>
         </motion.div>
       </div>

@@ -1,7 +1,7 @@
 @reference "../index.css";
 
 .hero-section {
-  @apply relative h-screen flex items-end justify-center overflow-hidden pb-40;
+  @apply relative h-[100svh] flex items-end justify-center overflow-hidden pb-20 md:pb-32 lg:pb-40;
 }
 
 .hero-bg {
@@ -11,19 +11,19 @@
 }
 
 .hero-overlay-dark {
-  @apply absolute inset-0 bg-black/20;
+  @apply absolute inset-0 bg-black/40;
 }
 
 .hero-overlay-gradient {
-  @apply absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent h-full;
+  @apply absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent h-full;
 }
 
 .hero-content {
-  @apply container mx-auto px-6 max-w-7xl relative z-10 text-center;
+  @apply container mx-auto px-4 md:px-6 max-w-7xl relative z-10 text-center;
 }
 
 .hero-title {
-  @apply text-6xl md:text-[12rem] font-black tracking-tighter leading-none text-white;
+  @apply text-5xl sm:text-7xl md:text-8xl lg:text-[11rem] font-black tracking-tighter leading-none text-white mb-4 md:mb-6;
   filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
 }
 
@@ -32,15 +32,28 @@
 }
 
 .university-tag {
-  @apply flex items-center gap-6;
+  @apply flex items-center justify-center gap-4 md:gap-6;
 }
 
-.tag-line {
-  @apply h-[1px] w-20 bg-white/30;
+.tag-line-left, .tag-line-right {
+  @apply h-[1px] w-8 sm:w-12 md:w-20 bg-white/30;
 }
 
-.tag-text {
-  @apply text-sm md:text-base font-bold tracking-[0.8em] uppercase text-white/60;
+.tag-text-container {
+  @apply flex flex-col md:flex-row items-center gap-1 md:gap-4;
+}
+
+.tag-text-main, .tag-text-sub {
+  @apply text-[11px] sm:text-xs md:text-sm lg:text-base font-bold tracking-[0.4em] md:tracking-[0.8em] uppercase text-white/80;
+}
+
+@media (max-width: 768px) {
+  .tag-text-main {
+    @apply tracking-[0.2em];
+  }
+  .tag-text-sub {
+    @apply block text-primary font-black tracking-[0.3em];
+  }
 }
 
 .scroll-indicator {

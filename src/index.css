@@ -31,8 +31,15 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
-    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+    @apply bg-background text-foreground overflow-x-hidden relative;
+  }
+
+  body::before {
+    content: "";
+    @apply fixed inset-0 z-[-1] pointer-events-none opacity-20;
+    background-image: 
+      linear-gradient(rgba(0, 122, 204, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 122, 204, 0.1) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 }

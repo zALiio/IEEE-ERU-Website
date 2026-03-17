@@ -42,7 +42,12 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Center: Tactile Links */}
+        {/* Center: Welcome Text (Mobile Only) */}
+        <div className="nav-welcome-text">
+          WELCOME
+        </div>
+
+        {/* Center: Tactile Links (Desktop) */}
         <div className="nav-links hidden md:flex">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path
@@ -74,7 +79,7 @@ const Navbar = () => {
           </button>
           
           <button 
-            className="md:hidden text-white p-2 hover:bg-white/10 rounded-full"
+            className="mobile-toggle"
             onClick={() => setMobileMenuOpen(true)}
           >
             <Menu size={24} />

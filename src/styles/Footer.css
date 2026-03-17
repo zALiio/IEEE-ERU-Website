@@ -1,0 +1,60 @@
+@reference "../index.css";
+
+.footer-section {
+  @apply py-24 md:py-14 relative overflow-hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.footer-section::before {
+  content: "";
+  @apply absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-20 pointer-events-none;
+  background: radial-gradient(circle at top, rgba(0, 122, 204, 0.15) 0%, transparent 60%);
+}
+
+.footer-container {
+  @apply container mx-auto px-6 relative z-10;
+}
+
+.footer-grid {
+  @apply grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 text-center md:text-left;
+}
+
+.footer-logo-area {
+  @apply col-span-1 md:col-span-2 flex flex-col items-center md:items-start;
+}
+
+.footer-logo {
+  @apply h-12 md:h-16 w-auto object-contain mb-6;
+}
+
+.footer-mission {
+  @apply text-white/40 text-sm leading-relaxed max-w-sm mx-auto md:mx-0;
+}
+
+.footer-links-title {
+  @apply text-white font-black mb-8 tracking-[0.3em] uppercase text-[10px];
+}
+
+.footer-list {
+  @apply flex flex-col gap-5;
+}
+
+.footer-link {
+  @apply text-white/40 text-[13px] hover:text-white transition-all duration-300 flex items-center justify-center md:justify-start gap-2;
+}
+
+.footer-bottom {
+  @apply pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8;
+}
+
+.footer-copy {
+  @apply text-white/20 text-[10px] tracking-wider;
+}
+
+.footer-socials {
+  @apply flex items-center gap-8;
+}
+
+.social-icon-link {
+  @apply text-white/30 hover:text-white transition-all duration-300;
+}

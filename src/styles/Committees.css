@@ -1,0 +1,198 @@
+@reference "../index.css";
+
+.committees-section-v3 {
+  @apply py-20 md:py-32 relative overflow-hidden;
+}
+
+.section-glow-v3 {
+  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] -z-10 opacity-30 pointer-events-none;
+  background: radial-gradient(circle at center, rgba(0, 122, 204, 0.1) 0%, transparent 70%);
+}
+
+.committees-container {
+  @apply container mx-auto px-6 max-w-7xl relative z-10;
+}
+
+.comm-header-v3 {
+  @apply flex flex-col items-center text-center mb-20 md:mb-28;
+}
+
+.sys-badge-v3 {
+  @apply flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg text-[9px] font-black tracking-[0.4em] uppercase text-primary mb-8;
+}
+
+.comm-title-v3 {
+  @apply text-5xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-none mb-6;
+}
+
+.comm-underline-v3 {
+  @apply w-20 h-[1px] bg-primary/40 rounded-full mt-4;
+}
+
+/* Flip Grid Layout */
+.committees-grid-v3 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8;
+}
+
+.committee-flip-perspective {
+  @apply relative h-[420px] sm:h-[440px] w-full;
+  perspective: 2500px;
+}
+
+.committee-flip-inner {
+  @apply relative w-full h-full;
+  transform-style: preserve-3d;
+}
+
+/* Card Face Universal Styles (V3 Restored) */
+.card-face-v3 {
+  @apply absolute inset-0 w-full h-full backface-hidden flex flex-col overflow-hidden;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Front Face: The Tech Block Style You Liked */
+.card-front-v3 {
+  @apply p-8 bg-white/[0.03] backdrop-blur-3xl;
+}
+
+.committee-flip-perspective:hover .card-front-v3 {
+  @apply border-primary/40 -translate-y-2;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.block-background-v3 {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.bg-number-v3 {
+  @apply absolute bottom-2 left-4 text-[11rem] font-black leading-none select-none pointer-events-none;
+  color: rgba(255, 255, 255, 0.03);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
+  letter-spacing: -0.05em;
+  font-family: var(--font-sans);
+}
+
+.bg-number-v3::after {
+  content: "";
+  @apply absolute -top-4 left-2 text-[10px] font-mono tracking-[0.4em] text-white/10;
+}
+
+.committee-flip-perspective:hover .bg-number-v3 {
+  color: rgba(255, 255, 255, 0.06);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+  @apply scale-105 transition-all duration-700;
+}
+
+.bg-grid-v3 {
+  @apply absolute inset-0 opacity-[0.03];
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.block-content-v3 {
+  @apply relative z-10 flex flex-col h-full items-start;
+}
+
+.block-header-v3 {
+  @apply flex w-full items-center justify-between mb-12;
+}
+
+.icon-wrapper-v3 {
+  @apply p-5 bg-primary/10 border border-primary/20 rounded-2xl text-primary transition-all duration-300;
+}
+
+.committee-flip-perspective:hover .icon-wrapper-v3 {
+  @apply bg-primary text-white scale-110 shadow-[0_0_20px_rgba(0,122,204,0.4)];
+}
+
+.status-indicator-v3 {
+  @apply flex items-center gap-3 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[8px] font-black text-white/30 tracking-widest;
+}
+
+.pulse-dot-v3 {
+  @apply w-1.5 h-1.5 bg-primary rounded-full animate-pulse;
+}
+
+.block-title-v3 {
+  @apply text-3xl font-black text-white mb-6 uppercase italic tracking-tight;
+}
+
+.block-summary-v3 {
+  @apply text-sm text-white/40 leading-relaxed font-medium mb-8 text-left;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.action-btn-v3 {
+  @apply mt-auto w-fit px-8 py-3 bg-primary/10 border border-primary/30 rounded-full text-[10px] font-black text-white uppercase tracking-[0.2em] transition-all duration-500 flex items-center gap-3 self-center;
+}
+
+.action-btn-v3:hover {
+  @apply bg-primary text-white border-primary -translate-y-1;
+  box-shadow: 0 10px 20px rgba(0, 122, 204, 0.4);
+  letter-spacing: 0.3em;
+}
+
+/* Back Face: Clean Summary Style */
+.card-back-v3 {
+  @apply bg-[#030712] p-8 flex flex-col relative;
+  transform: rotateY(180deg);
+  border: 1.5px solid rgba(255, 255, 255, 0.05);
+}
+
+.back-header-clean {
+  @apply absolute top-6 right-6 z-30;
+}
+
+.back-close-accent {
+  @apply p-2.5 bg-white/5 border border-white/10 rounded-xl text-white/40 hover:bg-white/10 hover:text-white transition-all duration-300 backdrop-blur-md;
+}
+
+.back-body-clean {
+  @apply h-full w-full overflow-y-auto pr-2 relative z-10 pt-4;
+}
+
+.back-body-clean::-webkit-scrollbar { width: 3px; }
+.back-body-clean::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full; }
+
+.responsibilities-list {
+  @apply flex flex-col gap-8 w-full;
+}
+
+.resp-item-clean {
+  @apply flex items-start gap-5 text-[17px] text-white/90 leading-[1.6] font-normal;
+  font-family: 'Outfit', sans-serif;
+}
+
+.resp-icon-v3 {
+  @apply text-primary mt-1 flex-shrink-0 opacity-80;
+  filter: drop-shadow(0 0 8px rgba(0, 122, 204, 0.4));
+}
+
+.resp-item-clean span {
+  @apply transition-all duration-300;
+}
+
+.resp-item-clean:hover span {
+  @apply text-white translate-x-1;
+}
+
+.back-footer-clean {
+  @apply mt-6 pt-6 relative z-10 flex flex-col gap-2 opacity-50;
+}
+
+.footer-line {
+  @apply w-10 h-[1px] bg-primary/30;
+}
+
+.footer-ref {
+  @apply text-[7px] font-mono text-white/20 tracking-[0.4em] uppercase;
+}

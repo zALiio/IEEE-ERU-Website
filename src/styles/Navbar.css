@@ -1,24 +1,24 @@
 @reference "../index.css";
 
 .nav-container {
-  @apply fixed top-10 left-0 right-0 z-50 px-6 transition-all duration-500;
+  @apply fixed top-4 sm:top-6 md:top-10 left-0 right-0 z-50 px-4 sm:px-6 transition-all duration-500;
 }
 
 .nav-container-scrolled {
-  @apply top-6;
+  @apply top-2 sm:top-4 md:top-6;
 }
 
 .nav-dock {
-  @apply mx-auto max-w-5xl flex items-center justify-between p-2 pl-6 glass shadow-2xl relative overflow-hidden transition-all duration-500;
+  @apply mx-auto max-w-5xl flex items-center justify-between p-1.5 sm:p-2 pl-4 sm:pl-6 glass shadow-2xl relative overflow-hidden transition-all duration-500;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(3, 7, 18, 0.5);
+  background: rgba(3, 7, 18, 0.6);
   backdrop-filter: blur(12px);
   border-radius: 100px;
 }
 
 .nav-dock-scrolled {
-  @apply max-w-2xl px-4 py-1;
-  border: 1px solid rgba(0, 122, 204, 0.4); /* Deeper Blue Border on scroll */
+  @apply max-w-[95%] sm:max-w-2xl px-3 sm:px-4 py-1;
+  border: 1px solid rgba(0, 122, 204, 0.4);
   background: rgba(3, 7, 18, 0.9);
   box-shadow: 0 0 30px rgba(0, 122, 204, 0.2);
 }
@@ -30,7 +30,7 @@
 }
 
 .nav-links {
-  @apply flex items-center gap-2 relative z-10;
+  @apply hidden md:flex items-center gap-2 relative z-10;
 }
 
 .nav-link {
@@ -45,6 +45,38 @@
   @apply text-white/40 hover:text-white/70;
 }
 
+.nav-welcome-text {
+  @apply md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[14px] font-black tracking-[0.45em] uppercase text-accent pointer-events-none;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  /* Clean, crisp blue text without background glow */
+  animation: typing-masterpiece 10s steps(7, end) infinite;
+}
+
+/* The Glowing Laser Caret */
+.nav-welcome-text::after {
+  content: "";
+  @apply absolute top-0 bottom-0 right-0 w-[2.5px] bg-white;
+  box-shadow: 0 0 10px #fff, 0 0 20px var(--color-accent);
+  animation: caret-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes typing-masterpiece {
+  0%, 5% { width: 0; }
+  45%, 80% { width: 14ch; } /* Stay fully typed */
+  95%, 100% { width: 0; }   /* Erase back to start */
+}
+
+@keyframes caret-pulse {
+  0%, 100% { transform: scaleY(1); opacity: 1; }
+  50% { transform: scaleY(1.3); opacity: 0.6; }
+}
+
+
+
+
+
 .nav-logo-area {
   @apply flex items-center gap-3 relative z-10;
 }
@@ -54,8 +86,11 @@
 }
 
 .dock-btn {
-  @apply bg-white text-black text-[10px] font-black tracking-widest px-8 py-3 rounded-full 
-         transition-all duration-300 hover:bg-accent hover:text-white;
+  @apply hidden md:flex bg-white text-black text-[10px] font-black tracking-widest px-8 py-3 rounded-full transition-all duration-300 hover:bg-accent hover:text-white;
+}
+
+.mobile-toggle {
+  @apply md:hidden text-white p-2 hover:bg-white/10 rounded-full;
 }
 
 /* Mobile HUD Overlay */
