@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Award, GraduationCap, Microscope, ShieldCheck, Zap, Globe, FileText, Users } from 'lucide-react';
 import '../styles/Counselor.css';
 
-const counselorImg = "/src/assets/img/counselor.webp";
+import counselorImg from '../assets/img/counselor.webp';
 
 const Counselor = () => {
   const stats = [

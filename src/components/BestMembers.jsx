@@ -6,9 +6,9 @@ import '../styles/BestMembers.css'
 // Use placeholders or actual paths (you mentioned you will add them)
 // Use local path strings instead of static imports to prevent Vite from crashing if files are missing.
 // Once you add the files to assets/img/, you can revert to static imports for optimization.
-const rokayaImg = "/src/assets/img/rokaya.webp";
-const yasserImg = "/src/assets/img/yasser.webp";
-const atefImg = "/src/assets/img/atef.webp";
+import rokayaImg from '../assets/img/rokaya.webp';
+import yasserImg from '../assets/img/yasser.webp';
+import atefImg from '../assets/img/atef.webp';
 
 const members = [
   {

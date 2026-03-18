@@ -3,6 +3,11 @@ import { motion } from 'framer-motion';
 import { ShieldCheck, Users, Zap, FileText, ChevronRight, Binary } from 'lucide-react';
 import '../styles/Officers.css';
 
+import tasbeehImg from '../assets/img/tasbeeh.webp';
+import zahyImg from '../assets/img/zahy.webp';
+import azazyImg from '../assets/img/azazy.webp';
+import hamssaImg from '../assets/img/hamssa.webp';
+
 const Officers = () => {
   const highCommand = [
     {
@@ -11,7 +16,7 @@ const Officers = () => {
        icon: ShieldCheck,
        clearance: "CLEARANCE_LVL_MAX",
        id: "CH-001",
-       img: "/src/assets/img/tasbeeh.webp" // Assuming user will add later
+       img: tasbeehImg
     },
     {
        name: "ZAHY ADEL",
@@ -19,7 +24,7 @@ const Officers = () => {
        icon: Users,
        clearance: "CLEARANCE_LVL_01",
        id: "VC-001",
-       img: "/src/assets/img/zahy.webp"
+       img: zahyImg
     },
     {
        name: "MOHAMED EL AZAZY",
@@ -27,7 +32,7 @@ const Officers = () => {
        icon: Zap,
        clearance: "CLEARANCE_LVL_01",
        id: "TR-001",
-       img: "/src/assets/img/azazy.webp"
+       img: azazyImg
     },
     {
        name: "HAMSSA HOSSAM",
@@ -35,7 +40,7 @@ const Officers = () => {
        icon: FileText,
        clearance: "CLEARANCE_LVL_01",
        id: "SC-001",
-       img: "/src/assets/img/hamssa.webp"
+       img: hamssaImg
     }
   ];
 

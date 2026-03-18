@@ -8,7 +8,7 @@ const Partners = () => {
   const partners = Array.from({ length: partnerCount }, (_, i) => ({
     id: i + 1,
     name: `ERU Partner ${i + 1}`,
-    path: `/src/assets/img/partners/${i + 1}.webp`
+    path: new URL(`../assets/img/partners/${i + 1}.webp`, import.meta.url).href
   }));
 
   const fadeUp = {
