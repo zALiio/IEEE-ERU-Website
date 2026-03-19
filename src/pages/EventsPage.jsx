@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, MapPin, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import Meta from '../components/Meta';
 import '../styles/Events.css';
 
 const EventsPage = () => {
@@ -45,6 +46,11 @@ const EventsPage = () => {
 
   return (
     <div className="events-page">
+      <Meta 
+        title="Events Archive"
+        description="Explore IEEE ERU Mission History. From technical workshops to global hackathons, browse our comprehensive operations log and join our upcoming events at Egyptian Russian University."
+        keywords="IEEE Events, ERU Workshops, Engineering Conferences Egypt, Student Branch Activities, IEEE ERU Gallery, Technical Sessions"
+      />
       <div className="events-header">
          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-4 mb-8">
             <div className="w-12 h-[1px] bg-primary/40" />

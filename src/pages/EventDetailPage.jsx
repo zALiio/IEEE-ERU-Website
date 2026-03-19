@@ -7,6 +7,7 @@ import {
   ChevronLeft, ChevronRight, Maximize2
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import Meta from '../components/Meta';
 import '../styles/Events.css';
 
 const EventDetailPage = () => {
@@ -63,6 +64,12 @@ const EventDetailPage = () => {
 
   return (
     <div className="event-detail-page bg-[#020408]">
+      <Meta 
+        title={event.title}
+        description={event.description.substring(0, 160)}
+        image={event.image_url}
+        keywords={`${event.title}, IEEE ERU Event, ${event.location}, Engineering Workshop, ERU Mission`}
+      />
       {/* 01. NAVIGATION & HEADER */}
       <header className="detail-header-refined">
         <Link to="/events" className="flex items-center gap-3 text-white/30 hover:text-primary transition-all mb-12 group">
@@ -100,15 +107,15 @@ const EventDetailPage = () => {
 
       {/* 02. CINEMATIC STAGE */}
       <section className="detail-visual-stage group">
-         <div className="stage-hud-overlay" />
-         <img src={event.image_url} alt="Cover" className="detail-main-img" />
-         <div className="stage-badge">MISSION_ASSET_01</div>
-         
-         <div className="absolute top-8 right-8 flex gap-4">
-            <div className="p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white/40">
-               <ShieldCheck size={20} />
-            </div>
-         </div>
+        <div className="stage-hud-overlay" />
+        <img src={event.image_url} alt={event.title} className="detail-main-img" />
+        <div className="stage-badge">MISSION_ASSET_01</div>
+        
+        <div className="absolute top-8 right-8 flex gap-4">
+          <div className="p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full text-white/40">
+            <ShieldCheck size={20} />
+          </div>
+        </div>
       </section>
 
       {/* 03. MISSION INTEL REPORT */}

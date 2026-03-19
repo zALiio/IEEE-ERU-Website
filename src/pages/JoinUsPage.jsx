@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Upload, CheckCircle2, AlertCircle, FileText, Sparkles, Network, User, GraduationCap, Target, Briefcase, Calendar, Clock, Instagram, MessageCircle, Heart, Paperclip } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import Meta from '../components/Meta';
 import '../styles/JoinUs.css';
 
 const FACULTIES = [
@@ -119,6 +120,11 @@ const JoinUsPage = () => {
 
   return (
     <div className="join-page">
+      <Meta 
+        title="Join Us"
+        description="Enlist in the IEEE ERU Student Branch. Apply for membership, explore various positions in engineering, marketing, HR, and multimedia. Start your journey with the Egyptian Russian University technical community."
+        keywords="Join IEEE ERU, Student Recruitment ERU, Engineering Teams, Volunteering Cairo, IEEE Membership Application, ERU Career Development"
+      />
       <div className="join-glow-top" />
 
       <div className="join-container">

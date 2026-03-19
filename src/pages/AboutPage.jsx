@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Target, Compass, Zap, Users, Globe, Briefcase, Code, GraduationCap, ArrowUpRight, Shield, Cpu, Activity } from 'lucide-react';
 import logo from '../assets/img/logo-white.webp';
+import Meta from '../components/Meta';
 import '../styles/AboutPage.css';
 
 const AboutPage = () => {
@@ -31,6 +32,11 @@ const AboutPage = () => {
 
   return (
     <div className="about-page">
+      <Meta 
+        title="About Us"
+        description="Learn about IEEE ERU Student Branch mission, vision, and strategic goals. We empower Egyptian Russian University students through technical excellence, leadership, and global networking."
+        keywords="IEEE ERU About, Mission and Vision, Student Engineering Society ERU, Technical Education Egypt, Student Volunteering ERU"
+      />
       {/* 01. THE ENERGY CORE (LOGO HERO) */}
       <section className="about-core-visual">
         <div className="core-logo-glow" />
