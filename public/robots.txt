@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ieee-eru.com/sitemap.xml
+Sitemap: https://ieee-eru.org/sitemap.xml

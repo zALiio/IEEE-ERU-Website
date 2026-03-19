@@ -2,26 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- 01. MAIN HUB -->
   <url>
-    <loc>https://ieee-eru.com/</loc>
+    <loc>https://ieee-eru.org/</loc>
     <lastmod>2026-03-19</lastmod>
     <priority>1.0</priority>
   </url>
   
   <!-- 02. AGENCY INTEL -->
   <url>
-    <loc>https://ieee-eru.com/about</loc>
+    <loc>https://ieee-eru.org/about</loc>
     <priority>0.8</priority>
   </url>
   
   <!-- 03. MISSION LOGS -->
   <url>
-    <loc>https://ieee-eru.com/events</loc>
+    <loc>https://ieee-eru.org/events</loc>
     <priority>0.8</priority>
   </url>
   
   <!-- 04. ENLISTMENT NODE -->
   <url>
-    <loc>https://ieee-eru.com/join</loc>
+    <loc>https://ieee-eru.org/join</loc>
     <priority>0.9</priority>
   </url>
 </urlset>
