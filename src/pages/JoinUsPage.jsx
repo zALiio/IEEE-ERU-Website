@@ -12,7 +12,7 @@ const FACULTIES = [
   "Al-Alsun and Technical Languages", "Fine Arts", "Applied Arts", "Other"
 ];
 
-const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
+const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year", "Graduated"];
 
 const POSITIONS = [
   "Graphic Designing", "Video Editing", "Multi Media", "Marketing", 
@@ -62,8 +62,11 @@ const JoinUsPage = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.size <= 10 * 1024 * 1024) setCvFile(file);
-    else if (file) alert("File too large (Max 10MB)");
+    if (file && file.size <= 10 * 1024 * 1024) {
+      setCvFile(file);
+    } else if (file) {
+      alert("File too large (Max 10MB)");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -72,14 +75,17 @@ const JoinUsPage = () => {
     setErrorMsg('');
 
     try {
-      if (!cvFile) throw new Error("A CV file is required to complete the mission.");
-      
-      const fileExt = cvFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${formData.firstName}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('cv-uploads').upload(fileName, cvFile);
-      if (uploadError) throw uploadError;
+      let publicUrl = null;
 
-      const { data: { publicUrl } } = supabase.storage.from('cv-uploads').getPublicUrl(fileName);
+      if (cvFile) {
+        const fileExt = cvFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${formData.firstName}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('cv-uploads').upload(fileName, cvFile);
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage.from('cv-uploads').getPublicUrl(fileName);
+        publicUrl = data.publicUrl;
+      }
 
       const { error: dbError } = await supabase.from('applications').insert([{
         first_name: formData.firstName,
@@ -102,7 +108,6 @@ const JoinUsPage = () => {
 
       if (dbError) throw dbError;
       
-      // RESET FORM
       setFormData({
         firstName: '', lastName: '', email: '', universityId: '', 
         nonEruInfo: '', faculty: '', yearOfStudy: '', phone: '', 
@@ -128,7 +133,6 @@ const JoinUsPage = () => {
       <div className="join-glow-top" />
 
       <div className="join-container">
-        {/* HEADER SECTION */}
         <div className="join-hero-header">
            <motion.span 
               initial={{ opacity: 0, y: 10 }}
@@ -159,7 +163,6 @@ const JoinUsPage = () => {
            </motion.div>
         </div>
 
-        {/* MAIN FORM DECK */}
         <motion.div 
            initial={{ opacity: 0, y: 40 }}
            animate={{ opacity: 1, y: 0 }}
@@ -206,7 +209,6 @@ const JoinUsPage = () => {
              </div>
           ) : (
              <form onSubmit={handleSubmit}>
-                {/* 01: PERSONAL IDENTITY */}
                 <div className="form-section">
                    <div className="section-header">
                       <span className="section-num">01/</span>
@@ -233,7 +235,6 @@ const JoinUsPage = () => {
                    </div>
                 </div>
 
-                {/* 02: ACADEMIC PARAMETERS */}
                 <div className="form-section">
                    <div className="section-header">
                       <span className="section-num">02/</span>
@@ -281,7 +282,6 @@ const JoinUsPage = () => {
                    </div>
                 </div>
 
-                {/* 03: STRATEGIC FOCUS */}
                 <div className="form-section">
                    <div className="section-header">
                       <span className="section-num">03/</span>
@@ -319,7 +319,6 @@ const JoinUsPage = () => {
                    </div>
                 </div>
 
-                {/* 04: ATTACHMENTS */}
                 <div className="form-section">
                    <div className="section-header">
                       <span className="section-num">04/</span>
@@ -328,11 +327,11 @@ const JoinUsPage = () => {
                    </div>
                    <div className="space-y-8">
                       <div className={`upload-zone group ${cvFile ? 'border-primary/40 bg-primary/5' : ''}`}>
-                         <input type="file" onChange={handleFileChange} required className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                         <input type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
                          <div className="file-info">
                             <Paperclip size={48} className={`transition-transform duration-500 group-hover:-translate-y-2 ${cvFile ? 'text-primary' : 'text-white/20'}`} />
                             <div className="space-y-1">
-                               <p className="text-white font-bold">{cvFile ? cvFile.name : 'UPLOAD YOUR CV'}</p>
+                               <p className="text-white font-bold">{cvFile ? cvFile.name : 'UPLOAD YOUR CV (OPTIONAL)'}</p>
                                <p className="text-white/30 text-[10px] uppercase tracking-widest font-black">Supported: PDF/DOCX // Max 10MB</p>
                             </div>
                          </div>
@@ -350,7 +349,6 @@ const JoinUsPage = () => {
                    </div>
                 </div>
 
-                {/* ERROR MESSAGE */}
                 {errorMsg && (
                    <div className="mt-10 p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3">
                       <AlertCircle size={20} />
@@ -358,7 +356,6 @@ const JoinUsPage = () => {
                    </div>
                 )}
 
-                {/* SUBMIT ACTION */}
                 <div className="submit-action-wrap">
                    <button 
                      type="submit" 
