@@ -242,7 +242,7 @@ const Navbar = () => {
 
               <div className="space-y-4">
                 <div className="space-y-1">
-                   <p className="text-[10px] font-black text-white/40 uppercase ml-2">Access Key (User)</p>
+                   <p className="text-[10px] font-black text-white/40 uppercase ml-2">Access Key</p>
                    <input 
                       type="text" 
                       placeholder="Enter Username"
@@ -270,7 +270,7 @@ const Navbar = () => {
               <div className="mt-10 mb-6 px-1 flex flex-col gap-3">
                  <button 
                     onClick={() => {
-                        if (loginData.user === 'ieeeeru' && loginData.pass === 'ieeeeru') {
+                        if (loginData.user === 'tasbeeh' && loginData.pass === 'zahy') {
                             setLogoClicks(0);
                             setShowAdminLogin(false);
                             navigate('/dashboard');
