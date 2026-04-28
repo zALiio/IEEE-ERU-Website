@@ -54,6 +54,14 @@ const AdminDashboard = () => {
     if (data) setApplications(data);
   };
 
+  const updateStatus = async (id, status) => {
+    setLoading(true);
+    const { error } = await supabase.from('applications').update({ status }).eq('id', id);
+    if (error) alert('Error updating status: ' + error.message);
+    else fetchApplications();
+    setLoading(false);
+  };
+
   const fetchSuggestions = async () => {
     const { data } = await supabase.from('suggestions').select('*').order('created_at', { ascending: false });
     if (data) setSuggestions(data);
@@ -102,25 +110,21 @@ const AdminDashboard = () => {
       alert("No data available to export.");
       return;
     }
-    // Get headers dynamically from the first record
     const headers = Object.keys(applications[0]);
     const csvRows = [
       headers,
       ...applications.map(app => headers.map(header => {
         let cell = String(app[header] ?? '');
-        // Escape quotes
         cell = cell.replace(/"/g, '""');
-        // Wrap cell in quotes if it contains a comma, newline, or quote
-        if (cell.search(/("|,|\n)/g) >= 0) {
+        if (cell.search(/("|,|\\n)/g) >= 0) {
           cell = `"${cell}"`;
         }
         return cell;
       }))
     ];
     
-    const csvString = csvRows.map(row => row.join(',')).join('\n');
-    // Add BOM (\uFEFF) for proper UTF-8 handling in Excel
-    const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
+    const csvString = csvRows.map(row => row.join(',')).join('\\n');
+    const blob = new Blob(['\\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
@@ -329,7 +333,7 @@ const AdminDashboard = () => {
                     </button>
                  </div>
               </div>
-              <div className="admin-table-container"><table className="admin-table"><thead><tr><th>Identity</th><th>Contact</th><th>Position</th><th>Credentials</th><th>Log</th></tr></thead><tbody>{applications.map(app=>(<tr key={app.id}><td><div className="font-bold text-white uppercase">{app.first_name} {app.last_name}</div></td><td><div className="text-[10px] opacity-40 mb-1">{app.email}</div><div className="text-[10px] text-primary tracking-widest font-black">{app.phone}</div></td><td><span className="admin-badge badge-accepted">{app.position}</span></td><td className="text-xs uppercase opacity-30">{app.faculty} / YEAR_{app.year_of_study}</td><td><a href={app.cv_url} target="_blank" className="text-primary hover:text-white flex items-center gap-2 text-[10px] font-black uppercase"><span className="border-b border-primary/20">Access Dossier</span><ExternalLink size={12}/></a></td></tr>))}</tbody></table></div>
+              <div className="admin-table-container"><table className="admin-table"><thead><tr><th>Identity</th><th>Contact</th><th>Position</th><th>Status</th><th>Credentials</th><th>Log</th></tr></thead><tbody>{applications.map(app=>(<tr key={app.id}><td><div className="font-bold text-white uppercase">{app.first_name} {app.last_name}</div></td><td><div className="text-[10px] opacity-40 mb-1">{app.email}</div><div className="text-[10px] text-primary tracking-widest font-black">{app.phone}</div></td><td><span className="admin-badge badge-accepted">{app.position}</span></td><td><select value={app.status || 'pending'} onChange={(e) => updateStatus(app.id, e.target.value)} className="bg-black text-white border border-white/20 rounded px-2 py-1 text-xs"><option value="pending">pending</option><option value="accepted">accepted</option><option value="rejected">rejected</option></select></td><td className="text-xs uppercase opacity-30">{app.faculty} / YEAR_{app.year_of_study}</td><td><a href={app.cv_url} target="_blank" className="text-primary hover:text-white flex items-center gap-2 text-[10px] font-black uppercase"><span className="border-b border-primary/20">Access Dossier</span><ExternalLink size={12}/></a></td></tr>))}</tbody></table></div>
            </div>
         ) : activeTab === 'suggestions' ? (
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
