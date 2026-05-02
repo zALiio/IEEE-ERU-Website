@@ -44,7 +44,7 @@ const About = () => {
             >
               <div className="codex-tag">UNIT_01</div>
               <p className="codex-text primary">
-                IEEE ERU is the local branch of IEEE (Institute of Electrical and Electronics Engineers) at the Egyptian Russian University.
+                IEEE ERU is the local student branch of IEEE, the Institute of Electrical and Electronics Engineers, at Egyptian Russian University.
               </p>
             </motion.div>
 
@@ -57,7 +57,7 @@ const About = () => {
             >
               <div className="codex-tag">UNIT_02</div>
               <p className="codex-text">
-                IEEE is the largest global community for engineers, connecting students and professionals around the world. Its membership is internationally recognized, giving you credibility and opportunities everywhere.
+                IEEE connects students and professionals around the world through a global network of technical communities, resources, and events.
               </p>
             </motion.div>
 
@@ -70,7 +70,7 @@ const About = () => {
             >
               <div className="codex-tag">UNIT_03</div>
               <p className="codex-text">
-                Choosing IEEE ERU means you can learn from experts, participate in projects and workshops, develop your skills, and join a supportive network that helps you grow academically and professionally.
+                Joining IEEE ERU gives students access to workshops, projects, leadership opportunities, and a supportive community that supports academic and professional growth.
               </p>
             </motion.div>
           </div>

@@ -34,6 +34,7 @@ const Partners = () => {
              <div className="partners-underline" />
           </motion.h2>
         </div>
+
       </div>
 
       {/* Marquee wraps outside container for FULL WIDTH */}

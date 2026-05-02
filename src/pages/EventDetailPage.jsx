@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -19,7 +19,7 @@ const EventDetailPage = () => {
   useEffect(() => {
     const fetchEventData = async () => {
       try {
-        const { data, error } = await supabase
+            const { data } = await supabase
           .from('events')
           .select('*')
           .eq('id', id)

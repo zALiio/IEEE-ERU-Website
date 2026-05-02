@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Facebook, Instagram, Linkedin, Mail, Phone, Send, ArrowRight, ShieldCheck, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Facebook, Instagram, Linkedin, Mail, Phone, Send, ShieldCheck, CheckCircle, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import logo from '../assets/img/logo-white.webp'
 import '../styles/Footer.css'
@@ -25,7 +25,9 @@ const Footer = () => {
         try {
           const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
           setFooterData(prev => ({ ...prev, ...parsed }));
-        } catch(e) {}
+            } catch (error) {
+               console.error('Footer settings parse failed:', error);
+            }
       }
     };
     fetchFooterData();
@@ -45,7 +47,8 @@ const Footer = () => {
       
       // Reset back to idle after 3 seconds
       setTimeout(() => setStatus('idle'), 3000);
-    } catch (err) { 
+      } catch (error) { 
+         console.error('Suggestion submission failed:', error);
       setStatus('error');
       setTimeout(() => setStatus('idle'), 4000);
     }
@@ -141,20 +144,16 @@ const Footer = () => {
         </div>
 
         {/* BOTTOM TERMINAL UPGRADED */}
-        <div className="footer-bottom-terminal-compact">
+        <div className="footer-bottom-terminal-compact" id="footer">
            <div className="footer-social-strip-mini">
-              <a href={footerData.facebook} target="_blank" className="social-node-micro"><Facebook size={18}/></a>
-              <a href={footerData.instagram} target="_blank" className="social-node-micro"><Instagram size={18}/></a>
-              <a href={footerData.linkedin} target="_blank" className="social-node-micro"><Linkedin size={18}/></a>
+              <a href={footerData.facebook} target="_blank" rel="noreferrer" className="social-node-micro"><Facebook size={18}/></a>
+              <a href={footerData.instagram} target="_blank" rel="noreferrer" className="social-node-micro"><Instagram size={18}/></a>
+              <a href={footerData.linkedin} target="_blank" rel="noreferrer" className="social-node-micro"><Linkedin size={18}/></a>
            </div>
 
            <div className="footer-identity-credits-compact">
               <div className="footer-id-flex-container">
                  <span className="text-[12px] text-white/40 uppercase font-black tracking-[0.2em]">© {currentYear} IEEE ERU</span>
-                 <a href="https://www.linkedin.com/in/ali-abdelnaser-947230295/" target="_blank" className="ali-credit-link-mini group">
-                    Created by <span className="text-primary ml-1 group-hover:text-white transition-all text-[12px] md:text-[13px]">Ali Abdelnaser</span>
-                    <ArrowRight size={14} className="ml-1 opacity-40 group-hover:translate-x-1" />
-                 </a>
               </div>
            </div>
         </div>

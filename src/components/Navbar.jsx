@@ -27,8 +27,22 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
+    { name: 'Board', path: '/board' },
     { name: 'Events', path: '/events' },
   ]
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault()
+
+    if (loginData.user === 'tasbeeh' && loginData.pass === 'zahy') {
+      setLogoClicks(0)
+      setShowAdminLogin(false)
+      navigate('/dashboard')
+    } else {
+      setLoginError(true)
+      setTimeout(() => setLoginError(false), 2000)
+    }
+  }
 
   return (
     <div className={`nav-container ${isScrolled ? 'nav-container-scrolled' : ''}`}>
@@ -81,7 +95,7 @@ const Navbar = () => {
                 key={link.name} 
                 to={link.path} 
                 className={`nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`}
-                onClick={(e) => {
+                  onClick={() => {
                   if (isActive) {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }
@@ -240,51 +254,41 @@ const Navbar = () => {
                 <p className="text-white/30 text-[10px] uppercase font-bold tracking-widest mt-2">IEEE ERU SB Command Control</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-white/40 uppercase ml-2">Access Key (User)</p>
-                   <input 
+                <form onSubmit={handleAdminLogin}>
+                 <div className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Access Key (User)</p>
+                    <input 
                       type="text" 
                       placeholder="Enter Username"
                       className={`login-field ${loginError ? 'border-red-500/50 bg-red-500/5' : ''}`}
                       onChange={(e) => setLoginData({...loginData, user: e.target.value})}
-                   />
-                </div>
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-white/40 uppercase ml-2">Secure Pass</p>
-                   <input 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Secure Pass</p>
+                    <input 
                       type="password" 
                       placeholder="Enter Password"
                       className={`login-field ${loginError ? 'border-red-500/50 bg-red-500/5' : ''}`}
                       onChange={(e) => setLoginData({...loginData, pass: e.target.value})}
-                   />
-                </div>
-              </div>
+                    />
+                  </div>
+                 </div>
 
-              {loginError && (
-                <div className="mt-4 text-center">
-                  <p className="text-red-500 text-[10px] font-black uppercase tracking-widest">Invalid Logic Matrix (Access Denied)</p>
-                </div>
-              )}
+                 {loginError && (
+                  <div className="mt-4 text-center">
+                    <p className="text-red-500 text-[10px] font-black uppercase tracking-widest">Invalid Logic Matrix (Access Denied)</p>
+                  </div>
+                 )}
 
-              <div className="mt-10 mb-6 px-1 flex flex-col gap-3">
-                 <button 
-                    onClick={() => {
-                        if (loginData.user === 'ieeeeru' && loginData.pass === 'ieeeeru') {
-                            setLogoClicks(0);
-                            setShowAdminLogin(false);
-                            navigate('/dashboard');
-                        } else {
-                            setLoginError(true);
-                            setTimeout(() => setLoginError(false), 2000);
-                        }
-                    }} 
-                    className="admin-action-btn justify-center"
-                 >
-                    <LogIn size={14} /> Authorize Access
-                 </button>
-                 <button onClick={() => setShowAdminLogin(false)} className="text-[10px] font-black text-white/20 uppercase hover:text-white transition-colors">Abort Mission</button>
-              </div>
+                 <div className="mt-10 mb-6 px-1 flex flex-col gap-3">
+                   <button type="submit" className="admin-action-btn justify-center">
+                     <LogIn size={14} /> Authorize Access
+                   </button>
+                   <button type="button" onClick={() => setShowAdminLogin(false)} className="text-[10px] font-black text-white/20 uppercase hover:text-white transition-colors">Abort Mission</button>
+                 </div>
+                </form>
             </motion.div>
           </div>
         )}

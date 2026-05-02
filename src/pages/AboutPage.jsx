@@ -15,12 +15,12 @@ const AboutPage = () => {
   ];
 
   const offerings = [
-    { title: "Technical Dev", icon: Code, desc: "Direct hands-on workshops in AI, Robotics, and Sustainable Energy architectures." },
-    { title: "Global Intel", icon: Globe, desc: "Real-time access to 400,000+ IEEE experts and the world's largest technical library." },
-    { title: "Command Hub", icon: Cpu, desc: "Strategic leadership roles within the branch to master project governance." },
-    { title: "Strategic PR", icon: Briefcase, desc: "Building direct conduits between high-potential students and industry leaders." },
-    { title: "Combat Tech", icon: Zap, desc: "High-stakes technical hackathons and international logic warfare (IEEEXtreme)." },
-    { title: "Certification", icon: GraduationCap, desc: "Internationally authenticated diplomas to validate your professional clearance." }
+      { title: "Technical Development", icon: Code, desc: "Hands-on workshops in AI, robotics, embedded systems, and sustainable energy." },
+      { title: "Global Access", icon: Globe, desc: "Connection to IEEE resources, technical talks, and a worldwide engineering network." },
+      { title: "Leadership", icon: Cpu, desc: "Practical roles that help students organize, communicate, and deliver projects." },
+      { title: "Industry Links", icon: Briefcase, desc: "Opportunities to meet industry guests, alumni, and university partners." },
+      { title: "Technical Challenges", icon: Zap, desc: "Hackathons and competitions that strengthen problem-solving and teamwork." },
+      { title: "Recognition", icon: GraduationCap, desc: "Certificates and achievements that strengthen student portfolios." }
   ];
 
   const fadeUp = {
@@ -34,7 +34,7 @@ const AboutPage = () => {
     <div className="about-page">
       <Meta 
         title="About Us"
-        description="Learn about IEEE ERU Student Branch mission, vision, and strategic goals. We empower Egyptian Russian University students through technical excellence, leadership, and global networking."
+            description="Learn about IEEE ERU Student Branch mission, vision, and goals. We help Egyptian Russian University students grow through technical learning, leadership, and professional development."
         keywords="IEEE ERU About, Mission and Vision, Student Engineering Society ERU, Technical Education Egypt, Student Volunteering ERU"
       />
       {/* 01. THE ENERGY CORE (LOGO HERO) */}
@@ -63,9 +63,9 @@ const AboutPage = () => {
            className="text-center mt-12 px-6"
         >
            <div className="refined-badge mx-auto">MISSION_CRITICAL_CORE_V4.0</div>
-           <p className="max-w-xl text-lg md:text-xl text-white/40 leading-relaxed font-light mx-auto">
-             Welcome to the strategic heart of innovation at ERU. We develop the minds that build the future.
-           </p>
+                <p className="max-w-xl text-lg md:text-xl text-white/40 leading-relaxed font-light mx-auto">
+                   Welcome to the heart of innovation at ERU, where we help shape the minds that will build the future.
+                </p>
         </motion.div>
       </section>
 
@@ -83,8 +83,7 @@ const AboutPage = () => {
                MISSION
             </h2>
             <p className="panel-content-text">
-               We aim to build a vibrant and innovative IEEE Student Branch that creates a 
-               meaningful volunteering experience for students in our university.
+               We aim to build a student branch that gives students meaningful opportunities in technical growth, leadership, and volunteering at our university.
             </p>
          </motion.div>
 
@@ -100,8 +99,7 @@ const AboutPage = () => {
                VISION
             </h2>
             <p className="panel-content-text">
-               Our vision is to empower students to explore, learn, and lead, connecting them with 
-               local and global opportunities while developing real-world skills.
+               Our vision is to help students explore, learn, and lead while connecting them with opportunities that strengthen practical, real-world skills.
             </p>
          </motion.div>
       </section>
@@ -136,7 +134,7 @@ const AboutPage = () => {
       <section className="capability-section-refined">
          <div className="section-header-refined">
             <div className="refined-badge">MEMBER_VAL_PROPOSITION</div>
-            <h2 className="refined-title">WHAT WE OFFER?</h2>
+            <h2 className="refined-title">WHAT WE OFFER</h2>
             <div className="refined-underline" />
          </div>
 

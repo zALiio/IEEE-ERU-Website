@@ -1,0 +1,65 @@
+@reference "../index.css";
+
+.high-board-section {
+  @apply py-20 md:py-28 relative overflow-hidden;
+}
+
+.high-board-container {
+  @apply container mx-auto px-6 max-w-7xl;
+}
+
+.high-board-header {
+  @apply mb-14 text-center;
+}
+
+.high-board-badge {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-[9px] font-black tracking-[0.35em] uppercase text-primary mb-6;
+}
+
+.high-board-title {
+  @apply text-4xl md:text-6xl font-black tracking-tight uppercase;
+}
+
+.high-board-subtitle {
+  @apply mt-4 text-sm md:text-base text-white/45 max-w-2xl mx-auto;
+}
+
+.high-board-empty {
+  @apply rounded-2xl border border-white/5 bg-white/[0.02] p-10 text-center text-white/35 text-sm uppercase tracking-[0.25em] font-black;
+}
+
+.high-board-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6;
+}
+
+.high-board-card {
+  @apply rounded-3xl border border-white/5 bg-white/[0.02] backdrop-blur-xl p-6 flex gap-5 items-start transition-all duration-300;
+}
+
+.high-board-card:hover {
+  @apply border-primary/30 bg-primary/[0.04] -translate-y-1;
+}
+
+.high-board-avatar-wrap {
+  @apply w-20 h-20 rounded-2xl border border-white/10 overflow-hidden flex-shrink-0;
+}
+
+.high-board-avatar {
+  @apply w-full h-full object-cover object-top;
+}
+
+.high-board-content {
+  @apply min-w-0;
+}
+
+.high-board-role {
+  @apply text-[10px] font-black uppercase tracking-[0.3em] text-primary/80 inline-flex items-center gap-2 mb-3;
+}
+
+.high-board-name {
+  @apply text-2xl font-black text-white tracking-tight uppercase mb-2;
+}
+
+.high-board-bio {
+  @apply text-sm text-white/50 leading-relaxed;
+}

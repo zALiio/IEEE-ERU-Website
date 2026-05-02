@@ -1,17 +1,18 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import Home from './pages/Home'
-import AboutPage from './pages/AboutPage'
-import EventsPage from './pages/EventsPage'
-import EventDetailPage from './pages/EventDetailPage'
-import JoinUsPage from './pages/JoinUsPage'
-import AdminDashboard from './pages/AdminDashboard'
 import ScrollToTop from './components/ScrollToTop'
 import ScrollUpButton from './components/ScrollUpButton'
 
-// Dummy pages for now
-const Teams = () => <div className="pt-32 min-h-screen text-center"><h1>Teams Page Coming Soon</h1></div>
+const Home = lazy(() => import('./pages/Home'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const BoardPage = lazy(() => import('./pages/BoardPage'))
+const EventsPage = lazy(() => import('./pages/EventsPage'))
+const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
+const JoinUsPage = lazy(() => import('./pages/JoinUsPage'))
+const VolunteerPortal = lazy(() => import('./pages/VolunteerPortal'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 
 function App() {
   return (
@@ -21,15 +22,24 @@ function App() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/events/:id" element={<EventDetailPage />} />
-            <Route path="/teams" element={<Teams />} />
-            <Route path="/join" element={<JoinUsPage />} />
-            <Route path="/dashboard" element={<AdminDashboard />} /> {/* Hidden dashboard route */}
-          </Routes>
+          <Suspense
+            fallback={
+              <div className="min-h-[60vh] flex items-center justify-center text-white/40 text-sm uppercase tracking-[0.4em]">
+                Loading...
+              </div>
+            }
+          >
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/board" element={<BoardPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/events/:id" element={<EventDetailPage />} />
+              <Route path="/join" element={<JoinUsPage />} />
+              <Route path="/volunteer" element={<VolunteerPortal />} />
+              <Route path="/dashboard" element={<AdminDashboard />} /> {/* Hidden dashboard route */}
+            </Routes>
+          </Suspense>
         </main>
         <Footer />
       </div>

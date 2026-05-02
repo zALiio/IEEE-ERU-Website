@@ -26,6 +26,10 @@
   @apply w-12 h-[1px] bg-primary/40 rounded-full mx-auto mt-2;
 }
 
+.partners-actions {
+  @apply flex flex-col sm:flex-row items-center justify-center gap-3 mt-8;
+}
+
 /* Infinite Marquee Grid */
 .partners-marq-wrap {
   @apply relative space-y-4 md:space-y-8 py-10;

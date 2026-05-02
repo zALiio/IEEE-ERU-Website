@@ -11,16 +11,16 @@ const EventsPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchEvents();
-    window.scrollTo(0, 0);
-  }, []);
+      const loadEvents = async () => {
+         setLoading(true);
+         const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+         if (data) setEvents(data);
+         setLoading(false);
+      };
 
-  const fetchEvents = async () => {
-    setLoading(true);
-    const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-    if (data) setEvents(data);
-    setLoading(false);
-  };
+      loadEvents();
+      window.scrollTo(0, 0);
+  }, []);
 
   const featured = events.find(e => e.category === 'UPCOMING_ANNOUNCEMENT');
   const pastEvents = events.filter(e => e.category === 'PAST_EVENT');
@@ -31,18 +31,6 @@ const EventsPage = () => {
        Syncing Files...
     </div>
   );
-
-  // Helper for conditional links
-  const UpcomingWrapper = ({ children, event }) => {
-    if (event.external_link) {
-      return (
-        <a href={event.external_link} target="_blank" rel="noopener noreferrer" className="block">
-           {children}
-        </a>
-      );
-    }
-    return <Link to={`/events/${event.id}`}>{children}</Link>;
-  };
 
   return (
     <div className="events-page">
@@ -64,8 +52,9 @@ const EventsPage = () => {
 
       {featured && (
          <section className="upcoming-hero group mb-40">
-            <UpcomingWrapper event={featured}>
-               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="upcoming-card">
+            {featured.external_link ? (
+              <a href={featured.external_link} target="_blank" rel="noopener noreferrer" className="block">
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="upcoming-card">
                   <div className="upcoming-visual-stage">
                      <div className="upcoming-visual-bg" />
                      <img src={featured.image_url} alt={featured.title} className="upcoming-img" />
@@ -108,7 +97,54 @@ const EventsPage = () => {
                      </div>
                   </div>
                </motion.div>
-            </UpcomingWrapper>
+              </a>
+            ) : (
+              <Link to={`/events/${featured.id}`} className="block">
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="upcoming-card">
+                  <div className="upcoming-visual-stage">
+                     <div className="upcoming-visual-bg" />
+                     <img src={featured.image_url} alt={featured.title} className="upcoming-img" />
+                     <div className="upcoming-badge">LEVEL_CRITICAL</div>
+                  </div>
+                  
+                  <div className="upcoming-content">
+                     <div className="flex items-center gap-3 mb-6 opacity-60">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(0,122,204,1)]" />
+                        <span className="text-[10px] font-black tracking-[0.5em] text-white uppercase">FEATURED_OPERATION</span>
+                     </div>
+                     
+                     <h2 className="upcoming-name italic !mb-10 group-hover:text-primary transition-all duration-500">
+                        {featured.title}
+                     </h2>
+                     
+                     <div className="flex flex-wrap gap-10 mb-12 pb-10 border-b border-white/5">
+                        <div className="flex items-center gap-3">
+                           <Calendar size={14} className="text-primary" />
+                           <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">{featured.date}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           <MapPin size={14} className="text-primary" />
+                           <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">{featured.location}</span>
+                        </div>
+                     </div>
+
+                     <p className="text-white/30 text-base mb-12 leading-relaxed font-light line-clamp-3 max-w-xl">
+                        {featured.description}
+                     </p>
+
+                     <div className="flex items-center gap-6 group/cta">
+                        <div className="h-[1px] w-12 bg-primary/40 group-hover:w-24 transition-all duration-500" />
+                        <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white group-hover:text-primary transition-colors">
+                           {featured.external_link ? 'JOIN OPERATION (LINK)' : 'Open Mission Intel'}
+                        </span>
+                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-primary transition-all">
+                           <ChevronRight size={16} className="text-primary" />
+                        </div>
+                     </div>
+                  </div>
+               </motion.div>
+              </Link>
+            )}
          </section>
       )}
 

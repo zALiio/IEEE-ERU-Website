@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Upload, CheckCircle2, AlertCircle, FileText, Sparkles, Network, User, GraduationCap, Target, Briefcase, Calendar, Clock, Instagram, MessageCircle, Heart, Paperclip } from 'lucide-react';
+import { Send, Upload, CheckCircle2, AlertCircle, FileText, Sparkles, Network, User, GraduationCap, Target, Briefcase, Calendar, Clock, Instagram, MessageCircle, Heart, Paperclip, ArrowUpRight } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { ensureSettingsDefaults, getSettingValue } from '../lib/supabaseSettings';
 import Meta from '../components/Meta';
 import '../styles/JoinUs.css';
 
@@ -36,17 +37,27 @@ const JoinUsPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    fetchRecruitmentStatus();
+      const bootstrap = async () => {
+         try {
+            await ensureSettingsDefaults();
+            await fetchRecruitmentStatus();
+         } catch (error) {
+            console.error('Settings bootstrap failed:', error);
+            setIsLoadingConfig(false);
+         }
+      };
+
+      bootstrap();
   }, []);
 
   const fetchRecruitmentStatus = async () => {
-    const { data, error } = await supabase
-      .from('settings')
-      .select('value')
-      .eq('key', 'is_recruitment_open')
-      .single();
+      const { data, error } = await supabase.from('settings').select('key, value');
 
-    if (data) setIsFormOpen(data.value === true || data.value === 'true');
+      if (data) {
+         const recruitmentOpen = getSettingValue(data, 'is_recruitment_open', true);
+         setIsFormOpen(Boolean(recruitmentOpen));
+      }
+
     setIsLoadingConfig(false);
     if (error) console.error("Sync Error:", error);
   };
@@ -101,6 +112,28 @@ const JoinUsPage = () => {
       }]);
 
       if (dbError) throw dbError;
+
+         try {
+            await supabase.functions.invoke('google-sheets-sync', {
+               body: {
+                  source: 'join-us',
+                  type: 'application',
+                  application: {
+                     first_name: formData.firstName,
+                     last_name: formData.lastName,
+                     email: formData.email,
+                     university_id: formData.universityId,
+                     faculty: formData.faculty,
+                     year_of_study: formData.yearOfStudy,
+                     phone: formData.phone,
+                     position: formData.position,
+                     status: 'pending',
+                  },
+               },
+            });
+         } catch (syncError) {
+            console.warn('Google Sheets sync skipped:', syncError);
+         }
       
       // RESET FORM
       setFormData({
@@ -157,6 +190,11 @@ const JoinUsPage = () => {
               </p>
               <p>Ready to start your journey? Apply now and let’s create impact together 💡🚀.</p>
            </motion.div>
+                <div className="mt-6">
+                   <Link to="/volunteer" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.35em] text-primary/80 hover:text-primary transition-colors">
+                      Volunteer portal <ArrowUpRight size={12} />
+                   </Link>
+                </div>
         </div>
 
         {/* MAIN FORM DECK */}

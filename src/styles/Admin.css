@@ -34,6 +34,14 @@
   @apply bg-white/[0.02];
 }
 
+.admin-inline-select {
+  @apply w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-white/70 outline-none transition-all hover:border-primary/30 focus:border-primary/40;
+}
+
+.admin-inline-select option {
+  color: #020408;
+}
+
 /* ADMIN BADGES */
 .admin-badge {
   @apply px-3 py-1 rounded-full text-[10px] font-black tracking-tighter uppercase;

@@ -33,6 +33,9 @@ Advanced routing utilizing React Router DOM with an intelligent automated scroll
 💼 **Recruitment Portal (Join Us):**
 A fully responsive, user-friendly interface for onboarding new recruits, supporting dynamic roles, document (CV) uploads, and academic info routing. 
 
+🪪 **Volunteer Portal:**
+Invite-based volunteer access with login, task tracking, point history, and a private internal roster for the branch.
+
 ## 🛠️ Tech Architecture
 
 This project was built leveraging modern web development standards and optimized for performance:
@@ -70,6 +73,21 @@ npm run dev
 ```
 
 Navigate to `http://localhost:5173/` in your browser to access the live terminal. 
+
+## 🧩 Supabase Setup
+
+Run the bootstrap SQL in [supabase/sql/full_setup.sql](supabase/sql/full_setup.sql) to create the settings defaults, members roster, volunteer tables, storage buckets, and helper RPCs.
+
+If you want Google Sheets sync, deploy the edge function in [supabase/functions/google-sheets-sync/index.ts](supabase/functions/google-sheets-sync/index.ts) and set `GOOGLE_SHEETS_WEBHOOK_URL` as a Supabase Function secret.
+
+## 🔐 Environment Variables
+
+Set these in your production host and local `.env` file:
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 ## 📜 Legal & Identity 
 Designed and maintained by the Technical Team at **IEEE ERU Student Branch**.
