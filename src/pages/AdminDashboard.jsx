@@ -17,7 +17,7 @@ const AdminDashboard = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   
   const [applications, setApplications] = useState([]);
-  const [communityMemberCount, setCommunityMemberCount] = useState(75);
+  const [communityMemberCount, setCommunityMemberCount] = useState(77);
   const [bestMembers, setBestMembers] = useState([]);
   const [highBoardMembers, setHighBoardMembers] = useState([]);
   const [events, setEvents] = useState([]);
