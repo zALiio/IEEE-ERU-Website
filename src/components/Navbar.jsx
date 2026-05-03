@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
 import flag from '../assets/img/falg-white.webp'
 import '../styles/Navbar.css'
 import '../styles/Admin.css'
-import { Menu, X, ArrowUpRight, Lock, ShieldCheck, Fingerprint, LogIn } from 'lucide-react'
+import { Menu, X, ArrowUpRight, Lock, ShieldCheck, Fingerprint, LogIn, Sun, Moon } from 'lucide-react'
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const { isDark, toggleTheme } = useTheme()
   
   // ADMIN STEALTH STATES
   const [logoClicks, setLogoClicks] = useState(0)
@@ -129,6 +131,14 @@ const Navbar = () => {
           >
             JOIN <ArrowUpRight size={14} />
           </Link>
+          
+          <button 
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
           
           <button 
             className="mobile-toggle"

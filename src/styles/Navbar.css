@@ -16,11 +16,23 @@
   border-radius: 100px;
 }
 
+[data-theme="light"] .nav-dock {
+  border: 1px solid rgba(0, 102, 178, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(0, 102, 178, 0.1);
+}
+
 .nav-dock-scrolled {
   @apply max-w-[95%] sm:max-w-2xl px-3 sm:px-4 py-1;
   border: 1px solid rgba(0, 122, 204, 0.4);
   background: rgba(3, 7, 18, 0.9);
   box-shadow: 0 0 30px rgba(0, 122, 204, 0.2);
+}
+
+[data-theme="light"] .nav-dock-scrolled {
+  border: 1px solid rgba(0, 102, 178, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 102, 178, 0.15);
 }
 
 /* The Sliding Background Card */
@@ -43,6 +55,14 @@
 
 .nav-link-inactive {
   @apply text-white/40 hover:text-white/70;
+}
+
+[data-theme="light"] .nav-link-active {
+  @apply text-primary;
+}
+
+[data-theme="light"] .nav-link-inactive {
+  @apply text-primary/50 hover:text-primary/80;
 }
 
 .nav-welcome-text {
@@ -77,6 +97,38 @@
 
 
 
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  @apply hidden md:flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300;
+  @apply text-white/60 hover:text-white hover:bg-primary/10;
+  @apply border border-transparent hover:border-primary/20;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-btn:hover {
+  @apply bg-primary/10 border-primary/20 text-white;
+}
+
+.theme-toggle-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover svg {
+  transform: rotate(20deg);
+}
+
+[data-theme="light"] .theme-toggle-btn {
+  @apply text-primary/50 hover:text-primary hover:bg-primary/10;
+  @apply border border-transparent hover:border-primary/20;
+}
+
+[data-theme="light"] .theme-toggle-btn:hover {
+  @apply bg-primary/10 border-primary/20 text-primary;
+}
+
 .nav-logo-area {
   @apply flex items-center gap-3 relative z-10;
 }
@@ -89,8 +141,16 @@
   @apply hidden md:flex bg-white text-black text-[10px] font-black tracking-widest px-8 py-3 rounded-full transition-all duration-300 hover:bg-accent hover:text-white;
 }
 
+[data-theme="light"] .dock-btn {
+  @apply bg-primary text-white hover:bg-accent;
+}
+
 .mobile-toggle {
   @apply md:hidden text-white p-3 hover:bg-white/10 rounded-full transition-all duration-300;
+}
+
+[data-theme="light"] .mobile-toggle {
+  @apply text-primary hover:bg-primary/10;
 }
 
 .hamburger-staggered {

@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Mission Critical: Direct URL Injection
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://bxrsjhpoivenbfcjbfhy.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4cnNqaHBvaXZlbmJmY2piZmh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTIwNTIsImV4cCI6MjA4OTMyODA1Mn0.snW57VGWBrZ4L9xBN-dDZpkub6fRpRKOLq5RkrW9Xiw';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+	throw new Error('Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

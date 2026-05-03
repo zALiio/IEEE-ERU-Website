@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ThemeProvider } from './context/ThemeContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
@@ -16,10 +17,11 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <ScrollUpButton />
-      <div className="min-h-screen flex flex-col">
+    <ThemeProvider>
+      <Router>
+        <ScrollToTop />
+        <ScrollUpButton />
+        <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow">
           <Suspense
@@ -43,7 +45,8 @@ function App() {
         </main>
         <Footer />
       </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   )
 }
 

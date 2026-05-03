@@ -34,7 +34,7 @@ const AboutPage = () => {
     <div className="about-page">
       <Meta 
         title="About Us"
-            description="Learn about IEEE ERU Student Branch mission, vision, and goals. We help Egyptian Russian University students grow through technical learning, leadership, and professional development."
+        description="Learn about IEEE ERU Student Branch mission, vision, and strategic goals. We empower Egyptian Russian University students through technical excellence, leadership, and global networking."
         keywords="IEEE ERU About, Mission and Vision, Student Engineering Society ERU, Technical Education Egypt, Student Volunteering ERU"
       />
       {/* 01. THE ENERGY CORE (LOGO HERO) */}
@@ -64,7 +64,7 @@ const AboutPage = () => {
         >
            <div className="refined-badge mx-auto">MISSION_CRITICAL_CORE_V4.0</div>
                 <p className="max-w-xl text-lg md:text-xl text-white/40 leading-relaxed font-light mx-auto">
-                   Welcome to the heart of innovation at ERU, where we help shape the minds that will build the future.
+                   Welcome to the strategic heart of innovation at ERU, where we shape the minds that will build the future.
                 </p>
         </motion.div>
       </section>
@@ -83,7 +83,7 @@ const AboutPage = () => {
                MISSION
             </h2>
             <p className="panel-content-text">
-               We aim to build a student branch that gives students meaningful opportunities in technical growth, leadership, and volunteering at our university.
+               We aim to build a student branch that gives students meaningful technical, leadership, and volunteering opportunities at our university.
             </p>
          </motion.div>
 
@@ -99,7 +99,7 @@ const AboutPage = () => {
                VISION
             </h2>
             <p className="panel-content-text">
-               Our vision is to help students explore, learn, and lead while connecting them with opportunities that strengthen practical, real-world skills.
+               Our vision is to help students explore, learn, and lead while connecting them with opportunities that strengthen real-world skills.
             </p>
          </motion.div>
       </section>
