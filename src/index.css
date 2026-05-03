@@ -55,7 +55,9 @@
 
 @layer base {
   body {
-    @apply bg-background text-foreground overflow-x-hidden relative;
+    @apply overflow-x-hidden relative;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
