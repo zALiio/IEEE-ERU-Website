@@ -27,6 +27,7 @@
   
   --tw-bg: var(--color-background);
   --tw-text: var(--color-foreground);
+  --color-foreground-rgb: 26,32,44;
 }
 
 @utility glass {
@@ -77,6 +78,24 @@
     opacity: 0.1;
   }
 }
+
+/* Light-theme overrides for utilities that use literal white colors (Tailwind classes) */
+[data-theme="light"] .text-white {
+  color: var(--color-foreground) !important;
+}
+[data-theme="light"] .text-white\/40 {
+  color: rgba(var(--color-foreground-rgb), 0.4) !important;
+}
+[data-theme="light"] .text-white\/30 {
+  color: rgba(var(--color-foreground-rgb), 0.3) !important;
+}
+[data-theme="light"] .text-white\/20 {
+  color: rgba(var(--color-foreground-rgb), 0.2) !important;
+}
+[data-theme="light"] .text-white\/50 {
+  color: rgba(var(--color-foreground-rgb), 0.5) !important;
+}
+
 
 
 @layer components {
