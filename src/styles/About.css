@@ -132,15 +132,15 @@
 }
 
 .core-logo-container {
-  @apply relative z-10 w-72 md:w-80 aspect-square flex items-center justify-center bg-[#030712] rounded-full border-2 border-primary/20;
-  box-shadow: 
-    0 0 70px rgba(0, 91, 152, 0.4),
-    inset 0 0 30px rgba(0, 91, 152, 0.2);
+  @apply relative z-10 w-72 md:w-80 aspect-square flex items-center justify-center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .codex-logo-pulsing {
   @apply w-[70%] h-[70%] object-contain;
-  filter: drop-shadow(0 0 15px rgba(0, 91, 152, 0.7));
 }
 
 /* Background Effects */
