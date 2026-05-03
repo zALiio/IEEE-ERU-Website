@@ -10,6 +10,8 @@
   --color-gold-glow: rgba(212, 175, 55, 0.1);
   --color-background: #030712;
   --color-foreground: #f8fafc;
+  --color-dark-background: #030712;
+  --color-dark-background-rgb: 3,7,18;
   
   --font-heading: "Outfit", sans-serif;
   --font-sans: "Inter", sans-serif;
@@ -28,6 +30,8 @@
   --tw-bg: var(--color-background);
   --tw-text: var(--color-foreground);
   --color-foreground-rgb: 26,32,44;
+  --color-dark-background: #030712;
+  --color-dark-background-rgb: 3,7,18;
 }
 
 @utility glass {
@@ -81,19 +85,19 @@
 
 /* Light-theme overrides for utilities that use literal white colors (Tailwind classes) */
 [data-theme="light"] .text-white {
-  color: var(--color-foreground) !important;
+  color: var(--color-dark-background) !important;
 }
 [data-theme="light"] .text-white\/40 {
-  color: rgba(var(--color-foreground-rgb), 0.4) !important;
+  color: rgba(var(--color-dark-background-rgb), 0.4) !important;
 }
 [data-theme="light"] .text-white\/30 {
-  color: rgba(var(--color-foreground-rgb), 0.3) !important;
+  color: rgba(var(--color-dark-background-rgb), 0.3) !important;
 }
 [data-theme="light"] .text-white\/20 {
-  color: rgba(var(--color-foreground-rgb), 0.2) !important;
+  color: rgba(var(--color-dark-background-rgb), 0.2) !important;
 }
 [data-theme="light"] .text-white\/50 {
-  color: rgba(var(--color-foreground-rgb), 0.5) !important;
+  color: rgba(var(--color-dark-background-rgb), 0.5) !important;
 }
 
 
