@@ -76,15 +76,29 @@
   font-family: var(--font-sans);
 }
 
+[data-theme="light"] .bg-number-v3 {
+  color: rgba(3, 7, 18, 0.06) !important;
+  -webkit-text-stroke: 1px rgba(3, 7, 18, 0.10) !important;
+}
+
 .bg-number-v3::after {
   content: "";
   @apply absolute -top-4 left-2 text-[10px] font-mono tracking-[0.4em] text-white/10;
+}
+
+[data-theme="light"] .bg-number-v3::after {
+  color: rgba(3, 7, 18, 0.18) !important;
 }
 
 .committee-flip-perspective:hover .bg-number-v3 {
   color: rgba(255, 255, 255, 0.06);
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
   @apply scale-105 transition-all duration-700;
+}
+
+[data-theme="light"] .committee-flip-perspective:hover .bg-number-v3 {
+  color: rgba(3, 7, 18, 0.10) !important;
+  -webkit-text-stroke: 1px rgba(3, 7, 18, 0.16) !important;
 }
 
 .bg-grid-v3 {
