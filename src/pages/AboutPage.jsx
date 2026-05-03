@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Target, Compass, Zap, Users, Globe, Briefcase, Code, GraduationCap, ArrowUpRight, Shield, Cpu, Activity } from 'lucide-react';
-import logo from '../assets/img/logo-white.webp';
+import logo from '../assets/img/logo-blue.webp';
 import Meta from '../components/Meta';
 import '../styles/AboutPage.css';
 

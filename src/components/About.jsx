@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import logo from '../assets/img/logo-white.webp'
+import logo from '../assets/img/logo-blue.webp'
 import '../styles/About.css'
 
 const About = () => {
