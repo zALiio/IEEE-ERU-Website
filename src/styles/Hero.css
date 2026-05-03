@@ -31,6 +31,11 @@
   @apply text-primary;
 }
 
+/* Light theme only: keep ERU accent in brand blue */
+[data-theme="light"] .hero-title-accent {
+  color: var(--color-primary) !important;
+}
+
 .university-tag {
   @apply flex items-center justify-center gap-4 md:gap-6;
 }

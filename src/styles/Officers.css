@@ -102,6 +102,11 @@
   @apply absolute -top-20 left-1/2 -translate-x-1/2 text-[15vw] font-black text-white/[0.01] pointer-events-none select-none uppercase tracking-tighter z-0;
 }
 
+/* Light theme only: remove decorative COMMAND word */
+[data-theme="light"] .officers-bg-text {
+  display: none;
+}
+
 /* Tablet & Mobile Adjustments */
 @media (max-width: 1024px) {
   .officers-title { @apply text-6xl; }
