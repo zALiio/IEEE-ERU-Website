@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Facebook, Instagram, Linkedin, Mail, Phone, Send, ShieldCheck, CheckCircle, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import logo from '../assets/img/logo-white.webp'
+import { useTheme } from '../context/ThemeContext'
+import logoWhite from '../assets/img/logo-white.webp'
+import logoBlue from '../assets/img/logo-blue.webp'
 import '../styles/Footer.css'
 
 const Footer = () => {
+   const { isDark } = useTheme()
   const [suggestion, setSuggestion] = useState('');
   const [status, setStatus] = useState('idle'); // idle, sending, success, error
   const currentYear = new Date().getFullYear();
@@ -62,10 +65,8 @@ const Footer = () => {
            
            {/* 01. THE UNIT LOGO */}
            <div className="footer-logo-unit flex items-center justify-center lg:justify-start">
-              <motion.img 
-                initial={{ opacity: 0 }} 
-                whileInView={{ opacity: 1 }} 
-                src={logo} 
+              <img 
+                        src={isDark ? logoWhite : logoBlue} 
                 alt="IEEE ERU" 
                 className="footer-logo-compact-row" 
               />

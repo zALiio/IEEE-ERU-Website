@@ -96,8 +96,26 @@
 [data-theme="light"] .text-white\/20 {
   color: rgba(var(--color-dark-background-rgb), 0.2) !important;
 }
+[data-theme="light"] .text-white\/10 {
+  color: rgba(var(--color-dark-background-rgb), 0.35) !important;
+}
+[data-theme="light"] .text-white\/45 {
+  color: rgba(var(--color-dark-background-rgb), 0.45) !important;
+}
 [data-theme="light"] .text-white\/50 {
   color: rgba(var(--color-dark-background-rgb), 0.5) !important;
+}
+[data-theme="light"] .text-white\/60 {
+  color: rgba(var(--color-dark-background-rgb), 0.6) !important;
+}
+[data-theme="light"] .text-white\/70 {
+  color: rgba(var(--color-dark-background-rgb), 0.7) !important;
+}
+[data-theme="light"] .text-white\/80 {
+  color: rgba(var(--color-dark-background-rgb), 0.8) !important;
+}
+[data-theme="light"] .text-white\/90 {
+  color: rgba(var(--color-dark-background-rgb), 0.9) !important;
 }
 
 /* Broad fallback: ensure any remaining literal-white text becomes visible in light theme

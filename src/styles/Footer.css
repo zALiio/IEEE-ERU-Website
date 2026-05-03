@@ -9,6 +9,12 @@
   background: radial-gradient(circle at top, rgba(0, 122, 204, 0.05) 0%, transparent 70%);
 }
 
+/* Light theme only: swap footer effects (blue <-> white) without touching dark theme */
+[data-theme="light"] .footer-section::before {
+  opacity: 0.16;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.28) 0%, transparent 72%);
+}
+
 .footer-container {
   @apply w-full max-w-[1440px] mx-auto px-6 md:px-4 relative z-10;
 }
@@ -22,9 +28,17 @@
   @apply flex items-center lg:pr-12 lg:border-r lg:border-white/5; /* Separator for premium look */
 }
 
+[data-theme="light"] .footer-logo-unit {
+  border-color: rgba(0, 102, 178, 0.25);
+}
+
 .footer-logo-compact-row {
   @apply w-full max-w-[140px] md:max-w-[180px] h-auto object-contain transition-all duration-700;
   filter: drop-shadow(0 0 20px rgba(0, 122, 204, 0.2));
+}
+
+[data-theme="light"] .footer-logo-compact-row {
+  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.8));
 }
 
 .footer-intel-unit {
@@ -52,6 +66,15 @@
   @apply w-full bg-white/[0.02] border border-white/5 rounded-xl p-4 text-white text-[10px] outline-none focus:border-primary/40 focus:bg-white/[0.04] transition-all min-h-[90px] resize-none leading-relaxed;
 }
 
+[data-theme="light"] .feedback-input-compact {
+  border-color: rgba(0, 102, 178, 0.28);
+  background: rgba(0, 102, 178, 0.05);
+}
+
+[data-theme="light"] .feedback-input-compact::placeholder {
+  color: rgba(3, 7, 18, 0.45);
+}
+
 .feedback-btn-mini {
   @apply flex items-center justify-between px-6 py-2 bg-primary/10 border border-primary/20 rounded-xl text-primary text-[8px] font-black uppercase tracking-widest transition-all hover:bg-primary hover:text-white disabled:opacity-50 mt-2;
 }
@@ -61,12 +84,24 @@
   @apply pt-8 border-t border-white/5 flex flex-col lg:flex-row items-center justify-between gap-6;
 }
 
+[data-theme="light"] .footer-bottom-terminal-compact {
+  border-top-color: rgba(0, 102, 178, 0.25);
+}
+
 .footer-social-strip-mini {
   @apply flex items-center gap-6;
 }
 
 .social-node-micro {
   @apply text-white/20 hover:text-primary transition-all duration-500 hover:scale-125;
+}
+
+[data-theme="light"] .social-node-micro {
+  color: rgba(0, 102, 178, 0.55);
+}
+
+[data-theme="light"] .social-node-micro:hover {
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .ali-credit-link-mini {
