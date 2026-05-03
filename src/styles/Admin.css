@@ -2,20 +2,44 @@
 
 /* --- ADMIN DASHBOARD VIBES --- */
 .admin-page {
-  @apply min-h-screen bg-[#020408] text-white pt-32 pb-20 px-4 md:px-10;
+  background-color: var(--color-background);
+  @apply min-h-screen pt-32 pb-20 px-4 md:px-10;
 }
 
 .admin-card {
-  @apply glass p-8 border border-white/5 rounded-[2rem] overflow-hidden relative;
+  @apply glass p-8 rounded-[2rem] overflow-hidden relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+[data-theme="light"] .admin-card {
+  border-color: rgba(0, 102, 178, 0.2);
+  background: rgba(0, 102, 178, 0.02);
 }
 
 .admin-stat-card {
-  @apply bg-white/[0.02] border border-white/5 p-6 rounded-2xl hover:border-primary/40 transition-all;
+  @apply p-6 rounded-2xl transition-all;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.admin-stat-card:hover {
+  border-color: rgba(0, 122, 204, 0.4);
+}
+[data-theme="light"] .admin-stat-card {
+  background-color: rgba(0, 102, 178, 0.04);
+  border-color: rgba(0, 102, 178, 0.2);
+}
+[data-theme="light"] .admin-stat-card:hover {
+  border-color: rgba(0, 102, 178, 0.5);
 }
 
 /* DATA TABLE */
 .admin-table-container {
-  @apply overflow-x-auto mt-10 rounded-2xl border border-white/5 bg-white/[0.01];
+  @apply overflow-x-auto mt-10 rounded-2xl;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.01);
+}
+[data-theme="light"] .admin-table-container {
+  border-color: rgba(0, 102, 178, 0.2);
+  background-color: rgba(0, 102, 178, 0.01);
 }
 
 .admin-table {
@@ -23,23 +47,61 @@
 }
 
 .admin-table th {
-  @apply p-5 text-[10px] font-black tracking-widest text-primary uppercase border-b border-white/5;
+  @apply p-5 text-[10px] font-black tracking-widest text-primary uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+[data-theme="light"] .admin-table th {
+  border-bottom-color: rgba(0, 102, 178, 0.2);
 }
 
 .admin-table td {
-  @apply p-5 text-sm text-white/60 border-b border-white/[0.03] align-middle;
+  @apply p-5 text-sm align-middle;
+  color: rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+[data-theme="light"] .admin-table td {
+  color: rgba(0, 102, 178, 0.7);
+  border-bottom-color: rgba(0, 102, 178, 0.05);
 }
 
 .admin-table tr:hover {
-  @apply bg-white/[0.02];
+  background-color: rgba(255, 255, 255, 0.02);
+}
+[data-theme="light"] .admin-table tr:hover {
+  background-color: rgba(0, 102, 178, 0.04);
 }
 
 .admin-inline-select {
-  @apply w-full rounded-xl border border-white/5 bg-white/[0.03] px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-white/70 outline-none transition-all hover:border-primary/30 focus:border-primary/40;
+  @apply w-full rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] outline-none transition-all;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+}
+.admin-inline-select:hover {
+  border-color: rgba(0, 122, 204, 0.3);
+}
+.admin-inline-select:focus {
+  border-color: rgba(0, 122, 204, 0.4);
+}
+[data-theme="light"] .admin-inline-select {
+  background-color: rgba(0, 102, 178, 0.05);
+  border-color: rgba(0, 102, 178, 0.25);
+  color: rgba(0, 102, 178, 0.8);
+}
+[data-theme="light"] .admin-inline-select:hover {
+  border-color: rgba(0, 102, 178, 0.5);
+}
+[data-theme="light"] .admin-inline-select:focus {
+  border-color: rgba(0, 102, 178, 0.6);
 }
 
 .admin-inline-select option {
   color: #020408;
+  background-color: white;
+}
+[data-theme="light"] .admin-inline-select option {
+  color: white;
+  background-color: #0066b2;
 }
 
 /* ADMIN BADGES */
@@ -52,11 +114,21 @@
 
 /* MASTER SWITCH */
 .master-switch-wrap {
-  @apply flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5;
+  @apply flex items-center gap-4 p-4 rounded-2xl;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+[data-theme="light"] .master-switch-wrap {
+  background-color: rgba(0, 102, 178, 0.05);
+  border-color: rgba(0, 102, 178, 0.2);
 }
 
 .switch-circle {
-  @apply w-12 h-6 rounded-full bg-white/10 relative cursor-pointer transition-all;
+  @apply w-12 h-6 rounded-full relative cursor-pointer transition-all;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="light"] .switch-circle {
+  background-color: rgba(0, 102, 178, 0.15);
 }
 
 .switch-active {
@@ -64,7 +136,9 @@
 }
 
 .switch-knob {
-  @apply absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all shadow-[0_0_10px_rgba(255,255,255,0.5)];
+  @apply absolute top-1 left-1 w-4 h-4 rounded-full transition-all;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .switch-active .switch-knob {
@@ -90,15 +164,45 @@
 }
 
 .login-field {
-  @apply w-full bg-white/[0.03] border border-white/5 rounded-xl px-6 py-4 text-white outline-none focus:border-primary/40 transition-all placeholder:text-white/10;
+  @apply w-full rounded-xl px-6 py-4 outline-none transition-all;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--color-foreground);
+}
+.login-field::placeholder {
+  color: rgba(255, 255, 255, 0.1);
+}
+.login-field:focus {
+  border-color: rgba(0, 122, 204, 0.4);
+}
+[data-theme="light"] .login-field {
+  background-color: rgba(0, 102, 178, 0.05);
+  border-color: rgba(0, 102, 178, 0.25);
+  color: var(--color-dark-background);
+}
+[data-theme="light"] .login-field::placeholder {
+  color: rgba(0, 102, 178, 0.45);
+}
+[data-theme="light"] .login-field:focus {
+  border-color: rgba(0, 102, 178, 0.5);
 }
 
 .field-label {
-  @apply text-[9px] font-black uppercase tracking-[0.3em] text-primary/60 mb-3 block border-l-2 border-primary/20 pl-4;
+  @apply text-[9px] font-black uppercase tracking-[0.3em] mb-3 block border-l-2 pl-4;
+  color: rgba(0, 122, 204, 0.6);
+  border-color: rgba(0, 122, 204, 0.2);
+}
+[data-theme="light"] .field-label {
+  color: rgba(0, 102, 178, 0.7);
+  border-color: rgba(0, 102, 178, 0.3);
 }
 
 .progress-wrap {
-  @apply w-full h-1 bg-white/5 rounded-full overflow-hidden mb-6 relative;
+  @apply w-full h-1 rounded-full overflow-hidden mb-6 relative;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+[data-theme="light"] .progress-wrap {
+  background-color: rgba(0, 102, 178, 0.1);
 }
 
 .progress-fill {

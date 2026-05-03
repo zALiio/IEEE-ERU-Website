@@ -10,6 +10,14 @@ import {
 import '../styles/Admin.css';
 
 const AdminDashboard = () => {
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const saved = sessionStorage.getItem('admin-auth');
+    return saved === 'true';
+  });
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  
   const [activeTab, setActiveTab] = useState('applications');
   const [loading, setLoading] = useState(false);
   const [isSavingApplicant, setIsSavingApplicant] = useState(false);
@@ -196,6 +204,28 @@ const AdminDashboard = () => {
       alert("Error saving: " + err.message);
     }
     setIsSavingSettings(false);
+  };
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    setAuthError('');
+    
+    // Admin password verification (change this to env var in production)
+    const ADMIN_PASSWORD = 'IEEE2025ERU';
+    
+    if (authPassword === ADMIN_PASSWORD) {
+      sessionStorage.setItem('admin-auth', 'true');
+      setIsAuthenticated(true);
+      setAuthPassword('');
+    } else {
+      setAuthError('Invalid password. Access denied.');
+      setAuthPassword('');
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('admin-auth');
+    setIsAuthenticated(false);
   };
 
   const openLiveSpreadsheet = () => {
@@ -577,6 +607,42 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-page">
+      {!isAuthenticated ? (
+        <div className="admin-login-overlay px-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0, y: 12 }} animate={{ scale: 1, opacity: 1, y: 0 }} className="login-card large">
+            <div className="flex items-center gap-4 mb-10 text-primary">
+              <Shield size={32}/>
+              <div className="flex-grow">
+                <h3 className="text-2xl font-black uppercase">Mission Authorization</h3>
+                <p className="text-[10px] text-white/20 uppercase tracking-[0.5em]">Admin Access Control</p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleAdminLogin} className="space-y-6">
+              <div>
+                <label className="field-label">Admin Password</label>
+                <input 
+                  type="password" 
+                  value={authPassword} 
+                  onChange={(e) => { setAuthPassword(e.target.value); setAuthError(''); }}
+                  placeholder="Enter password..."
+                  className="login-field"
+                  autoFocus
+                />
+              </div>
+              {authError && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm">
+                  {authError}
+                </div>
+              )}
+              <button type="submit" className="admin-action-btn w-full justify-center py-5">
+                <Power size={14} /> Authorize Access
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      ) : (
+        <>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div className="flex flex-col gap-2">
@@ -596,6 +662,7 @@ const AdminDashboard = () => {
            {activeTab === 'high_board' && <button onClick={() => setIsAddingHighBoard(true)} className="admin-action-btn"><Plus size={14} /> Add High Board Member</button>}
            {activeTab === 'events' && <button onClick={() => setIsAddingEvent(true)} className="admin-action-btn"><Plus size={14} /> Add Event</button>}
            <button onClick={() => { fetchApplications(); fetchBestMembers(); fetchHighBoardMembers(); fetchEvents(); fetchSuggestions(); fetchSettings(); }} className="admin-action-btn secondary"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Data</button>
+           <button onClick={handleLogout} className="admin-action-btn secondary"><Power size={14} /> Logout</button>
           </div>
         </div>
 
@@ -919,6 +986,8 @@ const AdminDashboard = () => {
             )}
         </AnimatePresence>
       </div>
+        </>
+      )}
     </div>
   );
 };

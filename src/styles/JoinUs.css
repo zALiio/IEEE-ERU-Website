@@ -2,7 +2,8 @@
 
 /* --- THE CLEAN TACTICAL COMMAND CENTER (SINGLE PAGE) --- */
 .join-page {
-  @apply min-h-screen bg-[#020408] relative pt-32 pb-40 px-4 md:px-6 flex flex-col items-center;
+  background-color: var(--color-background);
+  @apply min-h-screen relative pt-32 pb-40 px-4 md:px-6 flex flex-col items-center;
 }
 
 /* BACKGROUND ACCENTS */
@@ -21,7 +22,8 @@
 }
 
 .join-title {
-  @apply text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9];
+  @apply text-5xl md:text-7xl font-black tracking-tighter uppercase leading-[0.9];
+  color: var(--color-foreground);
 }
 
 .join-subtitle {
@@ -29,12 +31,21 @@
 }
 
 .join-description-text {
-  @apply max-w-3xl mx-auto text-white/50 text-base md:text-lg leading-relaxed font-light mt-8;
+  @apply max-w-3xl mx-auto text-base md:text-lg leading-relaxed font-light mt-8;
+  color: rgba(255, 255, 255, 0.5);
+}
+[data-theme="light"] .join-description-text {
+  color: rgba(3, 7, 18, 0.65);
 }
 
 /* FORM CARD */
 .form-card {
-  @apply glass rounded-[3rem] p-8 md:p-16 border border-white/5 relative overflow-hidden;
+  @apply glass rounded-[3rem] p-8 md:p-16 border relative overflow-hidden;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+[data-theme="light"] .form-card {
+  border-color: rgba(0, 102, 178, 0.2);
+  background: rgba(0, 102, 178, 0.02);
 }
 
 .form-card::before {
@@ -48,7 +59,11 @@
 }
 
 .section-header {
-  @apply flex items-center gap-4 mb-10 pb-4 border-b border-white/5;
+  @apply flex items-center gap-4 mb-10 pb-4 border-b;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+[data-theme="light"] .section-header {
+  border-color: rgba(0, 102, 178, 0.2);
 }
 
 .section-num {
@@ -56,7 +71,8 @@
 }
 
 .section-title {
-  @apply text-xl font-bold text-white uppercase tracking-[0.2em];
+  @apply text-xl font-bold uppercase tracking-[0.2em];
+  color: var(--color-foreground);
 }
 
 /* FIELDS & GRID */
@@ -73,12 +89,39 @@
 }
 
 .field-label {
-  @apply block text-[10px] font-black text-white/40 tracking-[0.3em] uppercase ml-1;
+  @apply block text-[10px] font-black tracking-[0.3em] uppercase ml-1;
+  color: rgba(255, 255, 255, 0.4);
+}
+[data-theme="light"] .field-label {
+  color: rgba(0, 102, 178, 0.65);
 }
 
 .form-field {
-  @apply w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-white/10 outline-none transition-all duration-300;
-  @apply focus:border-primary/50 focus:bg-white/[0.05] focus:shadow-[0_0_30px_rgba(0,122,204,0.1)];
+  @apply w-full rounded-2xl px-6 py-5 outline-none transition-all duration-300;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-foreground);
+}
+.form-field::placeholder {
+  color: rgba(255, 255, 255, 0.1);
+}
+.form-field:focus {
+  border-color: rgba(0, 122, 204, 0.5);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 30px rgba(0, 122, 204, 0.1);
+}
+[data-theme="light"] .form-field {
+  background-color: rgba(0, 102, 178, 0.05);
+  border-color: rgba(0, 102, 178, 0.28);
+  color: var(--color-dark-background);
+}
+[data-theme="light"] .form-field::placeholder {
+  color: rgba(0, 102, 178, 0.45);
+}
+[data-theme="light"] .form-field:focus {
+  border-color: rgba(0, 102, 178, 0.6);
+  background-color: rgba(0, 102, 178, 0.08);
+  box-shadow: 0 0 30px rgba(0, 102, 178, 0.15);
 }
 
 .form-textarea {
@@ -91,7 +134,19 @@
 }
 
 .selection-item {
-  @apply relative flex items-center gap-4 p-5 rounded-2xl border border-white/5 bg-white/[0.01] cursor-pointer transition-all hover:bg-white/[0.04] overflow-hidden;
+  @apply relative flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all overflow-hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.01);
+}
+.selection-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+[data-theme="light"] .selection-item {
+  border-color: rgba(0, 102, 178, 0.2);
+  background-color: rgba(0, 102, 178, 0.02);
+}
+[data-theme="light"] .selection-item:hover {
+  background-color: rgba(0, 102, 178, 0.05);
 }
 
 .selection-item.active {
@@ -99,7 +154,11 @@
 }
 
 .selection-indicator {
-  @apply w-4 h-4 rounded-full border-2 border-white/20 flex items-center justify-center shrink-0;
+  @apply w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+[data-theme="light"] .selection-indicator {
+  border-color: rgba(0, 102, 178, 0.4);
 }
 
 .selection-item.active .selection-indicator {
@@ -115,16 +174,38 @@
 }
 
 .selection-text {
-  @apply text-xs font-bold text-white/60 transition-colors;
+  @apply text-xs font-bold transition-colors;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .selection-item.active .selection-text {
-  @apply text-white;
+  color: var(--color-foreground);
+}
+
+[data-theme="light"] .selection-text {
+  color: rgba(0, 102, 178, 0.65);
+}
+
+[data-theme="light"] .selection-item.active .selection-text {
+  color: var(--color-dark-background);
 }
 
 /* SECURE UPLOAD */
 .upload-zone {
-  @apply border-2 border-dashed border-white/10 rounded-[2.5rem] p-12 text-center transition-all hover:bg-white/[0.03] hover:border-primary/40 relative cursor-pointer;
+  @apply border-2 rounded-[2.5rem] p-12 text-center transition-all relative cursor-pointer;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.upload-zone:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(0, 122, 204, 0.4);
+}
+[data-theme="light"] .upload-zone {
+  border-color: rgba(0, 102, 178, 0.25);
+}
+[data-theme="light"] .upload-zone:hover {
+  background-color: rgba(0, 102, 178, 0.05);
+  border-color: rgba(0, 102, 178, 0.55);
 }
 
 .file-info {
@@ -142,7 +223,11 @@
 }
 
 .submit-hint {
-  @apply text-[10px] font-black tracking-[0.3em] text-white/20 uppercase;
+  @apply text-[10px] font-black tracking-[0.3em] uppercase;
+  color: rgba(255, 255, 255, 0.2);
+}
+[data-theme="light"] .submit-hint {
+  color: rgba(0, 102, 178, 0.5);
 }
 
 @media (max-width: 768px) {
