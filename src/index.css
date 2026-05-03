@@ -100,6 +100,18 @@
   color: rgba(var(--color-dark-background-rgb), 0.5) !important;
 }
 
+/* Broad fallback: ensure any remaining literal-white text becomes visible in light theme
+   This forces most text to the dark background color, while preserving explicit
+   primary-colored text via the exceptions below. */
+[data-theme="light"] body, [data-theme="light"] body * {
+  color: var(--color-dark-background) !important;
+}
+
+/* Keep intentionally primary-colored text untouched (blue accents) */
+[data-theme="light"] .text-primary, [data-theme="light"] .text-primary * {
+  color: var(--color-primary) !important;
+}
+
 
 
 @layer components {
