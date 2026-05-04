@@ -647,21 +647,69 @@ const AdminDashboard = () => {
   };
 
   const convertToWebP = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new window.Image();
-        img.src = event.target.result;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          canvas.toBlob((blob) => resolve(blob), 'image/webp', 0.82);
+    return new Promise((resolve, reject) => {
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        const timer = setTimeout(() => {
+          // if conversion takes too long, reject to avoid hanging
+          reject(new Error('Image processing timeout'));
+        }, 20000); // 20s timeout
+
+        reader.onload = (event) => {
+          const img = new window.Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            clearTimeout(timer);
+            try {
+              // Downscale very large images to avoid main-thread freezing
+              const maxDim = 1600;
+              let { width, height } = img;
+              if (width > maxDim || height > maxDim) {
+                const scale = Math.min(maxDim / width, maxDim / height);
+                width = Math.round(width * scale);
+                height = Math.round(height * scale);
+              }
+
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              if (canvas.toBlob) {
+                canvas.toBlob((blob) => {
+                  if (blob) resolve(blob);
+                  else reject(new Error('Conversion produced empty blob'));
+                }, 'image/webp', 0.82);
+              } else {
+                // Fallback for older browsers: use dataURL -> blob
+                const dataUrl = canvas.toDataURL('image/webp', 0.82);
+                const arr = dataUrl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                  u8arr[n] = bstr.charCodeAt(n);
+                }
+                resolve(new Blob([u8arr], { type: mime }));
+              }
+            } catch (err) {
+              reject(err);
+            }
+          };
+          img.onerror = (e) => {
+            clearTimeout(timer);
+            reject(new Error('Failed to load image for processing'));
+          };
         };
-      };
+        reader.onerror = (e) => {
+          reject(new Error('Failed to read image file'));
+        };
+      } catch (err) {
+        reject(err);
+      }
     });
   };
 
