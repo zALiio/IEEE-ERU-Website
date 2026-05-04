@@ -156,15 +156,28 @@
 
 /* LOGIN MODAL */
 .admin-login-overlay {
-  @apply fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4;
+  @apply fixed inset-0 z-[100] backdrop-blur-xl flex items-center justify-center p-4;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+[data-theme="light"] .admin-login-overlay {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
 }
 
 .login-card {
-  @apply glass p-10 max-w-md w-full rounded-[2.5rem] border border-white/10 relative;
+  @apply p-10 max-w-md w-full rounded-[2.5rem] border border-white/10 relative overflow-y-auto;
+  background: rgba(3, 7, 18, 0.8);
+  max-height: 90vh;
+  backdrop-filter: blur(12px);
+}
+[data-theme="light"] .login-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 102, 178, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 102, 178, 0.15);
 }
 
 .login-field {
-  @apply w-full rounded-xl px-6 py-4 outline-none transition-all;
+  @apply w-full rounded-xl px-6 py-4 outline-none transition-all relative z-10;
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--color-foreground);
@@ -174,6 +187,7 @@
 }
 .login-field:focus {
   border-color: rgba(0, 122, 204, 0.4);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 [data-theme="light"] .login-field {
   background-color: rgba(0, 102, 178, 0.05);
@@ -184,7 +198,8 @@
   color: rgba(0, 102, 178, 0.45);
 }
 [data-theme="light"] .login-field:focus {
-  border-color: rgba(0, 102, 178, 0.5);
+  border-color: rgba(0, 102, 178, 0.6);
+  background-color: rgba(0, 102, 178, 0.08);
 }
 
 .field-label {
@@ -215,8 +230,44 @@ select.login-field {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230984e3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1.5rem center;
+  padding-right: 3rem;
+}
+
+select.login-field option {
+  background-color: #020408;
+  color: white;
+  padding: 8px;
+}
+
+[data-theme="light"] select.login-field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230066b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+[data-theme="light"] select.login-field option {
+  background-color: white;
+  color: #0066b2;
+  padding: 8px;
 }
 
 .login-card.large {
-  @apply max-w-4xl p-12;
+  @apply max-w-4xl p-12 overflow-y-auto max-h-[90vh];
+}
+
+/* Form elements - ensure visibility and styling */
+textarea.login-field {
+  @apply resize-none;
+}
+
+.login-card form {
+  @apply relative z-10;
+}
+
+/* Light theme - readable text */
+[data-theme="light"] .login-card h3,
+[data-theme="light"] .login-card h2 {
+  color: #04243a;
+}
+
+[data-theme="light"] .login-card p {
+  color: rgba(4, 36, 58, 0.75);
 }

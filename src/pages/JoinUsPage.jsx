@@ -190,11 +190,6 @@ const JoinUsPage = () => {
               </p>
               <p>Ready to start your journey? Apply now and let’s create impact together 💡🚀.</p>
            </motion.div>
-                <div className="mt-6">
-                   <Link to="/volunteer" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.35em] text-primary/80 hover:text-primary transition-colors">
-                      Volunteer portal <ArrowUpRight size={12} />
-                   </Link>
-                </div>
         </div>
 
         {/* MAIN FORM DECK */}

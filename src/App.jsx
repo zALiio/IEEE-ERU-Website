@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import Navbar from './components/Navbar'
+import FixedPortalButton from './components/FixedPortalButton'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import ScrollUpButton from './components/ScrollUpButton'
@@ -12,7 +13,7 @@ const BoardPage = lazy(() => import('./pages/BoardPage'))
 const EventsPage = lazy(() => import('./pages/EventsPage'))
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 const JoinUsPage = lazy(() => import('./pages/JoinUsPage'))
-const VolunteerPortal = lazy(() => import('./pages/VolunteerPortal'))
+const MemberPortal = lazy(() => import('./pages/MemberPortal'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 
 function App() {
@@ -38,11 +39,12 @@ function App() {
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/join" element={<JoinUsPage />} />
-              <Route path="/volunteer" element={<VolunteerPortal />} />
+              <Route path="/member" element={<MemberPortal />} />
               <Route path="/dashboard" element={<AdminDashboard />} /> {/* Hidden dashboard route */}
             </Routes>
           </Suspense>
         </main>
+        <FixedPortalButton />
         <Footer />
       </div>
       </Router>

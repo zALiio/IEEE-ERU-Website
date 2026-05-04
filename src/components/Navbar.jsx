@@ -131,6 +131,8 @@ const Navbar = () => {
           >
             JOIN <ArrowUpRight size={14} />
           </Link>
+
+          {/* Portal button removed from navbar; shown as fixed button on main pages */}
           
           <button 
             className="theme-toggle-btn"
@@ -228,6 +230,14 @@ const Navbar = () => {
                   }}
                 >
                    JOIN US
+                </Link>
+                <Link
+                  to="/member"
+                  className="hud-secondary-btn inline-flex items-center justify-center gap-2 w-full mt-3"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LogIn size={14} />
+                  IEEEIANS Hub
                 </Link>
               </motion.div>
             </div>

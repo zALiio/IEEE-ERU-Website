@@ -3,21 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { ensureSettingsDefaults, getSettingValue } from '../lib/supabaseSettings';
 import { 
-  Users, Power, Search, ExternalLink, 
+  Users, Search, ExternalLink, 
   Trash2, RefreshCw, ChevronRight, LayoutDashboard, Settings,
-  Plus, Image, Edit, Award, LayoutGrid, Zap, CheckCircle, Shield, Link as LinkIcon, MessageSquare, Eye, Paperclip
+  Plus, Image, Edit, Award, LayoutGrid, Zap, CheckCircle, Link as LinkIcon, MessageSquare, Eye, Paperclip
 } from 'lucide-react';
 import '../styles/Admin.css';
 
 const AdminDashboard = () => {
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const saved = sessionStorage.getItem('admin-auth');
-    return saved === 'true';
-  });
-  const [authPassword, setAuthPassword] = useState('');
-  const [authError, setAuthError] = useState('');
-  
   const [activeTab, setActiveTab] = useState('applications');
   const [loading, setLoading] = useState(false);
   const [isSavingApplicant, setIsSavingApplicant] = useState(false);
@@ -62,6 +54,33 @@ const AdminDashboard = () => {
   const [liveSheetUrl, setLiveSheetUrl] = useState('');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
+  // Portal management states
+  const [portalMembers, setPortalMembers] = useState([]);
+  const [portalTasks, setPortalTasks] = useState([]);
+  const [portalLogs, setPortalLogs] = useState([]);
+  const [portalActionLogs, setPortalActionLogs] = useState([]);
+  const [committees, setCommittees] = useState([]);
+  const [selectedCommittee, setSelectedCommittee] = useState('All');
+  const [portalRankings, setPortalRankings] = useState([]);
+  const [portalTaskStatusFilter, setPortalTaskStatusFilter] = useState('all');
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
+  const [taskDraft, setTaskDraft] = useState({ title: '', description: '', assigned_to: '', points: 0, due_at: '', committee: '', difficulty: 1 });
+  const [scoreDraft, setScoreDraft] = useState({ memberId: '', delta: 0, reason: '', adjustment_reason: '' });
+  
+  // New state for all 12 suggestions
+  const [previewTask, setPreviewTask] = useState(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [bulkSelectFilter, setBulkSelectFilter] = useState({ status: 'submitted', committee: 'All' });
+  const [selectedTasksForBulk, setSelectedTasksForBulk] = useState(new Set());
+  const [undoStack, setUndoStack] = useState([]);
+  const [committeeCustomRules, setCommitteeCustomRules] = useState({});
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [selectedRuleCommittee, setSelectedRuleCommittee] = useState('All');
+  const [customRuleDraft, setCustomRuleDraft] = useState({ late1to3: 0.7, late4to7: 0.5, late8plus: 0.25, early1to3: 1.1, early4plus: 1.25 });
+  const [yearlyResetEnabled, setYearlyResetEnabled] = useState(false);
+  const [showYearlyResetPrompt, setShowYearlyResetPrompt] = useState(false);
+
   const tabMeta = {
     applications: {
       label: 'Applications',
@@ -87,14 +106,324 @@ const AdminDashboard = () => {
       label: 'Settings',
       description: 'Update the public contact details shown across the website.',
     },
+    portal: {
+      label: 'Portal',
+      description: 'Manage member tasks, scores, and per-committee rankings.',
+    },
   };
 
   const dashboardStats = [
     { label: 'Applications', value: applications.length, icon: Users, tone: 'text-primary' },
-    { label: 'Best Members', value: communityMemberCount, icon: Award, tone: 'text-yellow-500' },
+    { label: 'Best Members', value: portalMembers.length || communityMemberCount, icon: Award, tone: 'text-yellow-500' },
     { label: 'Events', value: events.length, icon: LayoutGrid, tone: 'text-green-500' },
     { label: 'Messages', value: suggestions.length, icon: MessageSquare, tone: 'text-pink-500' },
   ];
+
+  /* ======= Calculate points based on submission timing with grace period, bonuses, sliding scale, and difficulty ======= */
+  const calculateTaskPoints = (basePoints, dueDate, submissionDate = new Date(), difficulty = 1, customPenalty = null) => {
+    if (!dueDate) return Math.ceil(basePoints * difficulty);
+    const due = new Date(dueDate);
+    const submission = new Date(submissionDate);
+    const graceHours = 6; // 6-hour grace period
+    const gracePeriod = graceHours * 60 * 60 * 1000;
+    const diffMs = submission - due - gracePeriod;
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    
+    let multiplier = 1;
+    
+    // Early bonus
+    if (diffDays < -3) multiplier = 1.25; // 4+ days early: 125%
+    else if (diffDays < 0) multiplier = 1.1; // 1-3 days early: 110%
+    // On-time (within grace period)
+    else if (diffDays <= 0) multiplier = 1.0; // on-time: 100%
+    // Apply custom penalty if provided, otherwise use default sliding scale
+    else if (customPenalty !== null) multiplier = customPenalty;
+    else {
+      if (diffDays <= 3) multiplier = 0.7; // 1-3 days late: 70%
+      else if (diffDays <= 7) multiplier = 0.5; // 4-7 days late: 50%
+      else multiplier = 0.25; // 8+ days late: 25%
+    }
+    
+    return Math.ceil(basePoints * difficulty * multiplier);
+  };
+
+  /* ======= Portal management API calls ======= */
+  const fetchPortalData = async () => {
+    try {
+      const { data: members } = await supabase.from('members').select('id, member_id, name, committee, points, role').order('name', { ascending: true });
+      const { data: tasks } = await supabase.from('member_tasks').select('*').order('created_at', { ascending: false });
+      const { data: logs } = await supabase.from('member_points_log').select('*').order('created_at', { ascending: false }).limit(200);
+      const { data: actionLogs } = await supabase.from('admin_actions_log').select('*').order('created_at', { ascending: false }).limit(100);
+      setPortalMembers(members || []);
+      setPortalTasks(tasks || []);
+      setPortalLogs(logs || []);
+      setPortalActionLogs(actionLogs || []);
+      setCommunityMemberCount(members?.length || 0); // update member count from DB
+
+      // derive committees list
+      const uniq = Array.from(new Set((members || []).map(m => m.committee).filter(Boolean)));
+      setCommittees(['All', ...uniq]);
+    } catch (err) {
+      console.error('Failed to fetch portal data', err);
+      // keep the portal usable even if the optional admin log table is missing
+      try {
+        const { data: members } = await supabase.from('members').select('id, member_id, name, committee, points, role').order('name', { ascending: true });
+        const { data: tasks } = await supabase.from('member_tasks').select('*').order('created_at', { ascending: false });
+        const { data: logs } = await supabase.from('member_points_log').select('*').order('created_at', { ascending: false }).limit(200);
+        setPortalMembers(members || []);
+        setPortalTasks(tasks || []);
+        setPortalLogs(logs || []);
+        const uniq = Array.from(new Set((members || []).map(m => m.committee).filter(Boolean)));
+        setCommittees(['All', ...uniq]);
+      } catch (fallbackErr) {
+        alert('Could not fetch portal data: ' + (fallbackErr.message || fallbackErr));
+      }
+    }
+  };
+
+  const logAdminAction = async (actionType, payload) => {
+    try {
+      await supabase.from('admin_actions_log').insert([{ action_type: actionType, payload, created_at: new Date().toISOString() }]);
+    } catch (error) {
+      console.debug('Admin action log unavailable', error);
+    }
+  };
+
+  /* ======= SUGGESTION #4: Preview Points Before Confirming ======= */
+  const previewConfirmation = (task) => {
+    const assignee = portalMembers.find(m => m.id === task.assigned_to);
+    const customRules = committeeCustomRules[task.committee] || customRuleDraft;
+    const customPenalty = getCustomPenaltyForTask(task, customRules);
+    const difficulty = task.difficulty || 1;
+    const previewPoints = calculateTaskPoints(task.points, task.due_at, new Date(), difficulty, customPenalty);
+    const daysLate = Math.max(0, Math.ceil((new Date() - new Date(task.due_at)) / (1000 * 60 * 60 * 24)) - 0.25);
+    setPreviewTask({ ...task, previewPoints, daysLate, difficultyMultiplier: difficulty, assigneeName: assignee?.name });
+    setIsPreviewModalOpen(true);
+  };
+
+  /* ======= SUGGESTION #7 & #9: Get Custom Penalty Based on Committee Rules ======= */
+  const getCustomPenaltyForTask = (task, rules) => {
+    if (!rules) return null;
+    const due = new Date(task.due_at);
+    const now = new Date();
+    const daysLate = Math.ceil((now - due) / (1000 * 60 * 60 * 24));
+    if (daysLate <= 0) return 1.1;
+    if (daysLate <= 3) return rules.late1to3 || 0.7;
+    if (daysLate <= 7) return rules.late4to7 || 0.5;
+    return rules.late8plus || 0.25;
+  };
+
+  /* ======= SUGGESTION #5: Bulk Confirm Tasks ======= */
+  const confirmBulkTasks = async () => {
+    const tasksToConfirm = (portalTasks || []).filter(t => {
+      if (bulkSelectFilter.status !== 'all' && t.status !== bulkSelectFilter.status) return false;
+      if (bulkSelectFilter.committee !== 'All') {
+        const assignee = portalMembers.find(m => m.id === t.assigned_to);
+        return assignee && assignee.committee === bulkSelectFilter.committee;
+      }
+      return true;
+    });
+    
+    if (tasksToConfirm.length === 0) {
+      alert('No tasks matching filter');
+      return;
+    }
+    
+    if (!window.confirm(`Confirm ${tasksToConfirm.length} tasks?`)) return;
+    
+    for (const task of tasksToConfirm) {
+      try {
+        await adminConfirmTask(task.id);
+      } catch (err) {
+        console.error('Bulk confirm error:', err);
+      }
+    }
+    alert(`${tasksToConfirm.length} tasks confirmed`);
+  };
+
+  /* ======= SUGGESTION #6: Undo/Revert Confirmation ======= */
+  const revertTaskConfirmation = async (taskId) => {
+    try {
+      const { data: task } = await supabase.from('member_tasks').select('*').eq('id', taskId).single();
+      if (!task) throw new Error('Task not found');
+      
+      await supabase.from('member_tasks').update({ status: 'submitted', completed_at: null }).eq('id', taskId);
+      
+      const { data: logs } = await supabase.from('member_points_log').select('*').eq('task_id', taskId);
+      if (logs && logs.length > 0) {
+        for (const log of logs) {
+          await supabase.from('member_points_log').delete().eq('id', log.id);
+          const { data: m } = await supabase.from('members').select('points').eq('id', task.assigned_to).single();
+          if (m) {
+            await supabase.from('members').update({ points: Math.max(0, (m.points || 0) - log.points) }).eq('id', task.assigned_to);
+          }
+        }
+      }
+      
+      await logAdminAction('revert_confirmation', { task_id: taskId, task_title: task.title });
+      await fetchPortalData();
+      alert('Confirmation reverted');
+    } catch (err) {
+      alert('Could not revert: ' + err.message);
+    }
+  };
+
+  /* ======= SUGGESTION #10: Yearly Reset ======= */
+  const performYearlyReset = async () => {
+    if (!window.confirm('Reset all member points to 0? This cannot be undone.')) return;
+    try {
+      await supabase.from('members').update({ points: 0 }).gt('points', -1);
+      await logAdminAction('yearly_reset', { timestamp: new Date().toISOString(), reason: 'Yearly reset' });
+      await fetchPortalData();
+      alert('All points reset to 0');
+    } catch (err) {
+      alert('Reset failed: ' + err.message);
+    }
+  };
+
+  const openTaskModal = () => {
+    setTaskDraft({ title: '', description: '', assigned_to: '', points: 0, due_at: '', committee: '', difficulty: 1, category: 'work' });
+    setIsTaskModalOpen(true);
+  };
+
+  const submitTaskDraft = async (event) => {
+    event.preventDefault();
+    try {
+      const targetMember = portalMembers.find(member => member.member_id === taskDraft.assigned_to || String(member.id) === String(taskDraft.assigned_to));
+      
+      // Auto-calculate points based on difficulty
+      const basePoints = 10;
+      const calculatedPoints = basePoints * (Number(taskDraft.difficulty) || 1);
+      
+      const payload = {
+        title: taskDraft.title,
+        description: taskDraft.description,
+        assigned_to: targetMember ? targetMember.id : null,
+        points: calculatedPoints,
+        difficulty: Number(taskDraft.difficulty) || 1,
+        status: 'open',
+        due_at: taskDraft.due_at || null,
+        category: taskDraft.category || 'work',
+        created_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from('member_tasks').insert([payload]);
+      if (error) throw error;
+
+      await logAdminAction('create_task', payload);
+      setIsTaskModalOpen(false);
+      await fetchPortalData();
+    } catch (error) {
+      alert('Could not create task: ' + error.message);
+    }
+  };
+
+  const getAutoPoints = (difficulty) => {
+    const basePoints = 10;
+    return basePoints * difficulty;
+  };
+
+  const submitScoreDraft = async (event) => {
+    event.preventDefault();
+    try {
+      const targetMember = portalMembers.find(member => member.member_id === scoreDraft.memberId || String(member.id) === String(scoreDraft.memberId));
+      if (!targetMember) throw new Error('Member not found');
+
+      const delta = Number(scoreDraft.delta) || 0;
+      const logReason = scoreDraft.adjustment_reason || scoreDraft.reason || 'Admin adjustment';
+      await supabase.from('member_points_log').insert([{ 
+        member_id: targetMember.id, 
+        task_id: null, 
+        points: delta, 
+        reason: logReason,
+        adjustment_reason: scoreDraft.adjustment_reason || null,
+        created_at: new Date().toISOString() 
+      }]);
+      const nextPoints = (targetMember.points || 0) + delta;
+      await supabase.from('members').update({ points: nextPoints }).eq('id', targetMember.id);
+
+      await logAdminAction('adjust_score', { member_id: targetMember.id, member_name: targetMember.name, delta, reason: logReason, adjustment_reason: scoreDraft.adjustment_reason });
+      setIsScoreModalOpen(false);
+      await fetchPortalData();
+    } catch (error) {
+      alert('Could not adjust score: ' + error.message);
+    }
+  };
+
+  const adminConfirmTask = async (taskId) => {
+    try {
+      const { data: task } = await supabase.from('member_tasks').select('*').eq('id', taskId).single();
+      if (!task) throw new Error('Task not found');
+
+      const completionDate = new Date();
+      await supabase.from('member_tasks').update({ status: 'completed', completed_at: completionDate.toISOString() }).eq('id', taskId);
+
+      // award points based on timing, difficulty, and custom rules
+      if (task.points && task.assigned_to) {
+        const customRules = committeeCustomRules[task.committee] || customRuleDraft;
+        const customPenalty = getCustomPenaltyForTask(task, customRules);
+        const difficulty = task.difficulty || 1;
+        const awardedPoints = calculateTaskPoints(task.points, task.due_at, completionDate, difficulty, customPenalty);
+        const daysLate = Math.ceil((completionDate - new Date(task.due_at)) / (1000*60*60*24));
+        const timingReason = task.due_at ? 
+          (daysLate <= 0 ? `Task completion (on time, ${difficulty}x difficulty)` : `Task completion (${daysLate} days late - ${Math.round(customPenalty * 100)}%, ${difficulty}x difficulty)`) 
+          : 'Task completion';
+        
+        const { data: assignee } = await supabase.from('members').select('name').eq('id', task.assigned_to).single();
+        await supabase.from('member_points_log').insert([{ member_id: task.assigned_to, task_id: task.id, points: awardedPoints, reason: timingReason, created_at: completionDate.toISOString() }]);
+        const { data: m } = await supabase.from('members').select('id, points').eq('id', task.assigned_to).single();
+        if (m) {
+          await supabase.from('members').update({ points: (m.points || 0) + awardedPoints }).eq('id', m.id);
+        }
+        
+        await logAdminAction('confirm_task', { task_id: task.id, task_title: task.title, member_id: task.assigned_to, member_name: assignee?.name, awarded_points: awardedPoints, reason: timingReason });
+      }
+
+      await fetchPortalData();
+    } catch (err) {
+      console.error('Confirm task failed', err);
+      alert('Could not confirm task: ' + (err.message || err));
+    }
+  };
+
+  const adminToggleTaskComplete = async (taskId, nextStatus) => {
+    try {
+      await supabase.from('member_tasks').update({ status: nextStatus, completed_at: nextStatus === 'completed' ? new Date().toISOString() : null }).eq('id', taskId);
+      await fetchPortalData();
+    } catch (err) {
+      console.error('Toggle task status failed', err);
+      alert('Could not update task status');
+    }
+  };
+
+  const adminAdjustScore = async (memberId, delta, reason = 'Admin adjustment') => {
+    try {
+      await supabase.from('member_points_log').insert([{ member_id: memberId, task_id: null, points: delta, reason, created_at: new Date().toISOString() }]);
+      const { data: m } = await supabase.from('members').select('id, points').eq('id', memberId).single();
+      if (m) {
+        await supabase.from('members').update({ points: (m.points || 0) + delta }).eq('id', m.id);
+      }
+      await fetchPortalData();
+    } catch (err) {
+      console.error('Adjust score failed', err);
+      alert('Could not adjust score: ' + (err.message || err));
+    }
+  };
+
+  const fetchRankingsByCommittee = async (committee) => {
+    try {
+      // if there's a member_rankings view, use it; otherwise compute from members
+      if (committee && committee !== 'All') {
+        const { data } = await supabase.from('member_rankings').select('*').eq('committee', committee).order('rank', { ascending: true }).limit(200);
+        return data || [];
+      }
+      const { data } = await supabase.from('member_rankings').select('*').order('committee', { ascending: true }).order('rank', { ascending: true }).limit(200);
+      return data || [];
+    } catch (err) {
+      console.error('Fetch rankings failed', err);
+      return [];
+    }
+  };
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -204,28 +533,6 @@ const AdminDashboard = () => {
       alert("Error saving: " + err.message);
     }
     setIsSavingSettings(false);
-  };
-
-  const handleAdminLogin = (e) => {
-    e.preventDefault();
-    setAuthError('');
-    
-    // Admin password verification (change this to env var in production)
-    const ADMIN_PASSWORD = 'IEEE2025ERU';
-    
-    if (authPassword === ADMIN_PASSWORD) {
-      sessionStorage.setItem('admin-auth', 'true');
-      setIsAuthenticated(true);
-      setAuthPassword('');
-    } else {
-      setAuthError('Invalid password. Access denied.');
-      setAuthPassword('');
-    }
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('admin-auth');
-    setIsAuthenticated(false);
   };
 
   const openLiveSpreadsheet = () => {
@@ -607,42 +914,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-page">
-      {!isAuthenticated ? (
-        <div className="admin-login-overlay px-4">
-          <motion.div initial={{ scale: 0.95, opacity: 0, y: 12 }} animate={{ scale: 1, opacity: 1, y: 0 }} className="login-card large">
-            <div className="flex items-center gap-4 mb-10 text-primary">
-              <Shield size={32}/>
-              <div className="flex-grow">
-                <h3 className="text-2xl font-black uppercase">Mission Authorization</h3>
-                <p className="text-[10px] text-white/20 uppercase tracking-[0.5em]">Admin Access Control</p>
-              </div>
-            </div>
-            
-            <form onSubmit={handleAdminLogin} className="space-y-6">
-              <div>
-                <label className="field-label">Admin Password</label>
-                <input 
-                  type="password" 
-                  value={authPassword} 
-                  onChange={(e) => { setAuthPassword(e.target.value); setAuthError(''); }}
-                  placeholder="Enter password..."
-                  className="login-field"
-                  autoFocus
-                />
-              </div>
-              {authError && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm">
-                  {authError}
-                </div>
-              )}
-              <button type="submit" className="admin-action-btn w-full justify-center py-5">
-                <Power size={14} /> Authorize Access
-              </button>
-            </form>
-          </motion.div>
-        </div>
-      ) : (
-        <>
+      <>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div className="flex flex-col gap-2">
@@ -661,8 +933,7 @@ const AdminDashboard = () => {
            {activeTab === 'best_members' && <button onClick={() => setIsAddingMember(true)} className="admin-action-btn"><Plus size={14} /> Add Best Member</button>}
            {activeTab === 'high_board' && <button onClick={() => setIsAddingHighBoard(true)} className="admin-action-btn"><Plus size={14} /> Add High Board Member</button>}
            {activeTab === 'events' && <button onClick={() => setIsAddingEvent(true)} className="admin-action-btn"><Plus size={14} /> Add Event</button>}
-           <button onClick={() => { fetchApplications(); fetchBestMembers(); fetchHighBoardMembers(); fetchEvents(); fetchSuggestions(); fetchSettings(); }} className="admin-action-btn secondary"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Data</button>
-           <button onClick={handleLogout} className="admin-action-btn secondary"><Power size={14} /> Logout</button>
+           <button onClick={() => { fetchApplications(); fetchBestMembers(); fetchHighBoardMembers(); fetchEvents(); fetchSuggestions(); fetchSettings(); fetchPortalData(); }} className="admin-action-btn secondary"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Data</button>
           </div>
         </div>
 
@@ -692,8 +963,8 @@ const AdminDashboard = () => {
         </div>
 
           <div className="flex flex-wrap gap-4 mb-10 p-2 bg-white/[0.02] border border-white/5 rounded-2xl w-fit">
-            {['applications', 'best_members', 'high_board', 'events', 'suggestions', 'settings'].map(tab => (
-           <button key={tab} onClick={() => setActiveTab(tab)} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-white/30 hover:text-white'}`}>
+            {['applications', 'best_members', 'high_board', 'events', 'suggestions', 'settings', 'portal'].map(tab => (
+           <button key={tab} onClick={async () => { setActiveTab(tab); if (tab === 'portal') await fetchPortalData(); }} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-white/30 hover:text-white'}`}>
              {tabMeta[tab].label}
              </button>
            ))}
@@ -722,6 +993,129 @@ const AdminDashboard = () => {
             </div>
                  <div className="admin-table-container"><table className="admin-table"><thead><tr><th>Identity</th><th>Contact</th><th>Position</th><th>Status</th><th>Credentials</th><th>Actions</th></tr></thead><tbody>{applications.map(app=>(<tr key={app.id}><td><div className="font-bold text-white uppercase">{app.first_name} {app.last_name}</div></td><td><div className="text-[10px] opacity-40 mb-1">{app.email}</div><div className="text-[10px] text-primary tracking-widest font-black">{app.phone}</div></td><td><span className="admin-badge badge-accepted">{app.position}</span></td><td><div className="flex flex-col gap-2 min-w-[150px]"><select value={app.status || 'pending'} onChange={(e) => updateApplicantField(app.id, { status: e.target.value })} disabled={updatingApplicantId === app.id} className="admin-inline-select"><option value="pending">Pending</option><option value="accepted">Accepted</option><option value="rejected">Rejected</option></select><select value={app.email_sent ? 'sent' : 'not_sent'} onChange={(e) => updateApplicantField(app.id, { email_sent: e.target.value === 'sent' })} disabled={updatingApplicantId === app.id} className="admin-inline-select"><option value="not_sent">Email not sent</option><option value="sent">Email sent</option></select></div></td><td className="text-xs uppercase opacity-30">{app.faculty} / YEAR_{app.year_of_study}</td><td><div className="flex flex-wrap gap-2"><button onClick={() => openApplicantReview(app)} className="text-primary hover:text-white flex items-center gap-2 text-[10px] font-black uppercase px-3 py-2 rounded-lg bg-white/5 hover:bg-primary/10 transition-colors"><Eye size={12}/> Review</button><a href={app.cv_url} target="_blank" rel="noreferrer" className="text-primary hover:text-white flex items-center gap-2 text-[10px] font-black uppercase px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"><span className="border-b border-primary/20">CV</span><ExternalLink size={12}/></a></div></td></tr>))}</tbody></table></div>
            </div>
+        ) : activeTab === 'portal' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="admin-card lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Portal Tasks</p>
+                  <h3 className="text-2xl font-black uppercase">Member Tasks</h3>
+                </div>
+                <div className="flex items-center gap-3">
+                  <select value={portalTaskStatusFilter} onChange={(e) => setPortalTaskStatusFilter(e.target.value)} className="admin-inline-select">
+                    <option value="all">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                  <select value={selectedCommittee} onChange={(e) => setSelectedCommittee(e.target.value)} className="admin-inline-select">
+                    {(committees || ['All']).map(c => (<option key={c} value={c}>{c}</option>))}
+                  </select>
+                  <button onClick={confirmBulkTasks} className="admin-action-btn" title="Confirm all submitted tasks matching filter"><CheckCircle size={14} /> Confirm All</button>
+                  <button onClick={openTaskModal} className="admin-action-btn"><Plus size={14} /> New Task</button>
+                  <button onClick={fetchPortalData} className="admin-action-btn secondary"><RefreshCw size={14} /> Refresh</button>
+                </div>
+              </div>
+              <div className="admin-table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>Title</th><th>Assigned</th><th>Points</th><th>Diff</th><th>Status</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    {(portalTasks || []).filter(t => {
+                      if (portalTaskStatusFilter !== 'all' && t.status !== portalTaskStatusFilter) return false;
+                      if (!selectedCommittee || selectedCommittee === 'All') return true;
+                      const assignee = portalMembers.find(m => m.id === t.assigned_to);
+                      return assignee && assignee.committee === selectedCommittee;
+                    }).map(t => (
+                      <tr key={t.id}>
+                        <td className="font-bold text-white uppercase">{t.title}</td>
+                        <td className="text-sm text-white/60">{(portalMembers.find(m => m.id === t.assigned_to) || {}).name || t.assigned_to}</td>
+                        <td className="text-center">{t.points || 0}</td>
+                        <td className="text-center text-xs bg-white/[0.03] px-2 py-1 rounded">{t.difficulty ? `${t.difficulty}x` : '1x'}</td>
+                        <td className="text-sm uppercase tracking-[0.2em]">{t.status}</td>
+                        <td>
+                          <div className="flex gap-1 flex-wrap">
+                            {t.status === 'submitted' && <button onClick={() => previewConfirmation(t)} className="admin-action-btn text-xs" title="Preview points and confirm"><Eye size={12} /> Preview</button>}
+                            {t.status === 'completed' && <button onClick={() => adminToggleTaskComplete(t.id, 'open')} className="admin-action-btn secondary text-xs">Reopen</button>}
+                            <button onClick={async () => {
+                              if (!confirm('Delete this task?')) return;
+                              await supabase.from('member_tasks').delete().eq('id', t.id);
+                              await logAdminAction('delete_task', { task_id: t.id });
+                              await fetchPortalData();
+                            }} className="admin-action-btn secondary text-xs text-red-400 border-red-400/20">Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="admin-card">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-2">Members</p>
+                  <h3 className="text-xl font-black uppercase">Members & Scores</h3>
+                </div>
+              </div>
+
+              <div className="space-y-3 max-h-[52vh] overflow-y-auto p-2">
+                {(portalMembers || []).filter(m => !selectedCommittee || selectedCommittee === 'All' || m.committee === selectedCommittee).map(m => (
+                  <div key={m.id} className="flex items-center justify-between bg-white/[0.02] p-3 rounded-lg">
+                    <div>
+                      <div className="font-bold uppercase text-sm">{m.name}</div>
+                      <div className="text-[10px] text-white/40">{m.member_id || ''} • {m.committee || '—'}</div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="font-black text-lg">{m.points || 0}</div>
+                      <button onClick={() => openScoreModal(m)} className="admin-action-btn small"><Edit size={12} /> Adjust</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6">
+                <p className="text-[10px] font-black uppercase text-white/30 mb-2">Committee Rankings</p>
+                <div className="flex items-center gap-3 mb-3">
+                  <select value={selectedCommittee} onChange={async (e) => { const c = e.target.value; setSelectedCommittee(c); const ranks = await fetchRankingsByCommittee(c); setPortalRankings(ranks || []); }} className="admin-inline-select">
+                    {(committees || ['All']).map(c => (<option key={c} value={c}>{c}</option>))}
+                  </select>
+                  <button onClick={async () => { const ranks = await fetchRankingsByCommittee(selectedCommittee); setPortalRankings(ranks || []); }} className="admin-action-btn secondary"><RefreshCw size={14}/> Load</button>
+                </div>
+
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {(portalRankings || []).slice(0, 30).map(r => (
+                    <div key={r.member_id || r.id} className="flex items-center justify-between bg-white/[0.02] p-2 rounded">
+                      <div>
+                        <div className="text-sm font-bold">{r.name || r.member_id}</div>
+                        <div className="text-[10px] text-white/40">Rank #{r.rank} • {r.committee}</div>
+                      </div>
+                      <div className="font-black">{r.points || 0}</div>
+                    </div>
+                  ))}
+                  {(!portalRankings || portalRankings.length === 0) && <div className="text-[10px] text-white/30">No rankings loaded.</div>}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <p className="text-[10px] font-black uppercase text-white/30 mb-2">Admin Action Log</p>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {(portalActionLogs || []).slice(0, 8).map(log => (
+                    <div key={log.id} className="flex items-center justify-between bg-white/[0.02] p-2 rounded">
+                      <div>
+                        <div className="text-sm font-bold uppercase">{log.action_type}</div>
+                        <div className="text-[10px] text-white/40">{new Date(log.created_at).toLocaleString()}</div>
+                      </div>
+                      <div className="text-[10px] text-white/50 max-w-[220px] truncate">{JSON.stringify(log.payload || {})}</div>
+                    </div>
+                  ))}
+                  {(!portalActionLogs || portalActionLogs.length === 0) && <div className="text-[10px] text-white/30">No admin actions logged yet.</div>}
+                </div>
+              </div>
+            </div>
+          </div>
         ) : activeTab === 'suggestions' ? (
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {suggestions.map(s => (
@@ -769,6 +1163,7 @@ const AdminDashboard = () => {
                 ))}
               </div>
         ) : activeTab === 'settings' ? (
+           <div className="space-y-6">
            <div className="admin-card max-w-2xl">
               <div className="flex items-center gap-3 mb-8 text-primary">
                  <Settings size={24} />
@@ -804,6 +1199,15 @@ const AdminDashboard = () => {
                  </button>
               </form>
            </div>
+           <div className="admin-card max-w-2xl">
+              <div className="flex items-center gap-3 mb-6 text-yellow-500">
+                 <Award size={24} />
+                <h3 className="text-xl font-black uppercase">Yearly Reset</h3>
+              </div>
+              <p className="text-sm text-white/50 mb-6">Reset all member points to 0 at the start of a new season. This action cannot be undone.</p>
+              <button onClick={performYearlyReset} className="admin-action-btn bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:bg-yellow-500 hover:text-white w-full justify-center py-4">Reset All Points to 0</button>
+           </div>
+           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
              {events.map(ev => (
@@ -817,7 +1221,7 @@ const AdminDashboard = () => {
                 </div>
              ))}
           </div>
-        )}
+          )}
 
         <AnimatePresence>
           {selectedApplicant && applicantDraft && (
@@ -921,6 +1325,164 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {isTaskModalOpen && (
+            <div className="admin-login-overlay px-4">
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 12 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 12 }} className="login-card large max-h-[90vh] overflow-y-auto">
+                <div className="flex items-start justify-between gap-4 mb-8">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary/60 mb-2">Portal Task</p>
+                    <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">Create New Task</h3>
+                  </div>
+                  <button onClick={() => setIsTaskModalOpen(false)} className="text-3xl text-white/10 hover:text-white">&times;</button>
+                </div>
+                <form onSubmit={submitTaskDraft} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="field-label !mb-2">Task Title</label>
+                      <input className="login-field" required value={taskDraft.title} onChange={(e) => setTaskDraft(prev => ({ ...prev, title: e.target.value }))} />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="field-label !mb-2">Description</label>
+                      <textarea className="login-field h-28 pt-4" required value={taskDraft.description} onChange={(e) => setTaskDraft(prev => ({ ...prev, description: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="field-label !mb-2">Committee (Filter Members)</label>
+                      <select className="login-field" value={taskDraft.committee} onChange={(e) => {
+                        setTaskDraft(prev => ({ ...prev, committee: e.target.value, assigned_to: '' }));
+                      }}>
+                        <option value="">All Committees</option>
+                        {(committees || []).filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="field-label !mb-2">Assign To Member</label>
+                      <select className="login-field" value={taskDraft.assigned_to} onChange={(e) => {
+                        const selected = portalMembers.find(m => (m.member_id || m.id) === e.target.value);
+                        setTaskDraft(prev => ({ ...prev, assigned_to: e.target.value, committee: selected?.committee || '' }));
+                      }}>
+                        <option value="">Select member</option>
+                        {(portalMembers || []).filter(member => !taskDraft.committee || member.committee === taskDraft.committee).map(member => (
+                          <option key={member.id} value={member.member_id || member.id}>{member.name} ({member.committee})</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="field-label !mb-2">Difficulty</label>
+                      <select className="login-field" value={taskDraft.difficulty} onChange={(e) => setTaskDraft(prev => ({ ...prev, difficulty: parseFloat(e.target.value) }))}>
+                        <option value="1">Easy (1x) - 10 pts</option>
+                        <option value="1.5">Medium (1.5x) - 15 pts</option>
+                        <option value="2">Hard (2x) - 20 pts</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="field-label !mb-2">Points (Auto)</label>
+                      <input type="text" className="login-field bg-white/5" value={getAutoPoints(taskDraft.difficulty || 1)} disabled />
+                    </div>
+                    <div>
+                      <label className="field-label !mb-2">Due Date</label>
+                      <input type="date" className="login-field" value={taskDraft.due_at} onChange={(e) => setTaskDraft(prev => ({ ...prev, due_at: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-end">
+                    <button type="button" onClick={() => setIsTaskModalOpen(false)} className="admin-action-btn secondary">Cancel</button>
+                    <button type="submit" className="admin-action-btn"><Plus size={14} /> Create Task</button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+
+          {isScoreModalOpen && (
+            <div className="admin-login-overlay px-4">
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 12 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 12 }} className="login-card large">
+                <div className="flex items-start justify-between gap-4 mb-8">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary/60 mb-2">Portal Score</p>
+                    <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white">Adjust Member Score</h3>
+                  </div>
+                  <button onClick={() => setIsScoreModalOpen(false)} className="text-3xl text-white/10 hover:text-white">&times;</button>
+                </div>
+                <form onSubmit={submitScoreDraft} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="field-label !mb-2">Member</label>
+                      <select className="login-field" value={scoreDraft.memberId} onChange={(e) => setScoreDraft(prev => ({ ...prev, memberId: e.target.value }))}>
+                        <option value="">Select member</option>
+                        {(portalMembers || []).map(member => <option key={member.id} value={member.member_id || member.id}>{member.name} - {member.member_id}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="field-label !mb-2">Points Delta</label>
+                      <input type="number" className="login-field" value={scoreDraft.delta} onChange={(e) => setScoreDraft(prev => ({ ...prev, delta: e.target.value }))} />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="field-label !mb-2">Reason</label>
+                      <textarea className="login-field h-20 pt-4" value={scoreDraft.reason} onChange={(e) => setScoreDraft(prev => ({ ...prev, reason: e.target.value }))} placeholder="e.g., Bonus for early submission" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="field-label !mb-2">Justification (e.g., Late work - excused due to illness)</label>
+                      <textarea className="login-field h-20 pt-4" value={scoreDraft.adjustment_reason} onChange={(e) => setScoreDraft(prev => ({ ...prev, adjustment_reason: e.target.value }))} placeholder="Optional: Add justification for override" />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-end">
+                    <button type="button" onClick={() => setIsScoreModalOpen(false)} className="admin-action-btn secondary">Cancel</button>
+                    <button type="submit" className="admin-action-btn"><Award size={14} /> Save Score</button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+
+          {isPreviewModalOpen && previewTask && (
+            <div className="admin-login-overlay px-4">
+              <motion.div initial={{ scale: 0.95, opacity: 0, y: 12 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 12 }} className="login-card">
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary/60 mb-2">Preview Confirmation</p>
+                    <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-white">Points Calculation</h3>
+                  </div>
+                  <button onClick={() => setIsPreviewModalOpen(false)} className="text-3xl text-white/10 hover:text-white">&times;</button>
+                </div>
+                <div className="space-y-4 mb-8 bg-white/[0.02] p-6 rounded-xl border border-white/5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Task</p>
+                      <p className="text-sm font-bold text-white">{previewTask.title}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Assigned To</p>
+                      <p className="text-sm font-bold text-white">{previewTask.assigneeName}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Base Points</p>
+                      <p className="text-sm font-bold text-white">{previewTask.points}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Difficulty</p>
+                      <p className="text-sm font-bold text-white">{previewTask.difficultyMultiplier}x</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Days Late</p>
+                      <p className="text-sm font-bold text-white">{previewTask.daysLate}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Status</p>
+                      <p className="text-sm font-bold text-yellow-400">{previewTask.status}</p>
+                    </div>
+                  </div>
+                  <div className="border-t border-white/10 pt-4 mt-4">
+                    <p className="text-[10px] font-black uppercase text-primary mb-2">Points to Award</p>
+                    <p className="text-3xl font-black text-primary">{previewTask.previewPoints}</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <button type="button" onClick={() => setIsPreviewModalOpen(false)} className="admin-action-btn secondary">Cancel</button>
+                  <button type="button" onClick={() => { setIsPreviewModalOpen(false); adminConfirmTask(previewTask.id); }} className="admin-action-btn"><CheckCircle size={14} /> Confirm & Award</button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
            {(isAddingMember || isEditingMember) && (
               <div className="admin-login-overlay px-4">
                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="login-card large">
@@ -987,7 +1549,6 @@ const AdminDashboard = () => {
         </AnimatePresence>
       </div>
         </>
-      )}
     </div>
   );
 };
