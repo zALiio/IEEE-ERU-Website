@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { ensureSettingsDefaults, getSettingValue } from '../lib/supabaseSettings';
 import { 
   Users, Search, ExternalLink, 
-  Trash2, RefreshCw, ChevronRight, LayoutDashboard, Settings,
+  Trash2, RefreshCw, ChevronRight, LayoutDashboard, Settings, Shield,
   Plus, Image, Edit, Award, LayoutGrid, Zap, CheckCircle, Link as LinkIcon, MessageSquare, Eye, Paperclip
 } from 'lucide-react';
 import '../styles/Admin.css';
@@ -17,7 +17,7 @@ const AdminDashboard = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   
   const [applications, setApplications] = useState([]);
-  const [communityMemberCount, setCommunityMemberCount] = useState(77);
+  const [communityMemberCount, setCommunityMemberCount] = useState(0);
   const [bestMembers, setBestMembers] = useState([]);
   const [highBoardMembers, setHighBoardMembers] = useState([]);
   const [events, setEvents] = useState([]);
@@ -114,7 +114,7 @@ const AdminDashboard = () => {
 
   const dashboardStats = [
     { label: 'Applications', value: applications.length, icon: Users, tone: 'text-primary' },
-    { label: 'Best Members', value: portalMembers.length || communityMemberCount, icon: Award, tone: 'text-yellow-500' },
+    { label: 'Members', value: (portalMembers && portalMembers.length) ? portalMembers.length : communityMemberCount, icon: Award, tone: 'text-yellow-500' },
     { label: 'Events', value: events.length, icon: LayoutGrid, tone: 'text-green-500' },
     { label: 'Messages', value: suggestions.length, icon: MessageSquare, tone: 'text-pink-500' },
   ];
@@ -435,6 +435,7 @@ const AdminDashboard = () => {
         fetchEvents();
         fetchSuggestions();
         fetchSettings();
+        fetchPortalData();
       } catch (error) {
         console.error('Admin settings bootstrap failed:', error);
         fetchApplications();
@@ -443,6 +444,7 @@ const AdminDashboard = () => {
         fetchEvents();
         fetchSuggestions();
         fetchSettings();
+        fetchPortalData();
       }
     };
 
@@ -450,8 +452,15 @@ const AdminDashboard = () => {
   }, []);
 
   const fetchApplications = async () => {
-    const { data } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
-    if (data) setApplications(data);
+    try {
+      const res = await supabase.from('applications').select('*').order('created_at', { ascending: false });
+      // support both `{ data }` and direct arrays returned by mocks
+      const data = res && (res.data !== undefined ? res.data : res);
+      console.log('fetchApplications result:', res);
+      if (data) setApplications(data);
+    } catch (err) {
+      console.error('fetchApplications error:', err);
+    }
   };
 
   const fetchSuggestions = async () => {

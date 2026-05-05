@@ -3,7 +3,14 @@
 /* --- ADMIN DASHBOARD VIBES --- */
 .admin-page {
   background-color: var(--color-background);
-  @apply min-h-screen pt-32 pb-20 px-4 md:px-10;
+  @apply min-h-screen pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 px-3 sm:px-6 md:px-10;
+}
+
+/* Improve mobile layout */
+@media (max-width: 640px) {
+  .admin-page {
+    @apply pt-20 pb-12 px-2;
+  }
 }
 
 .admin-card {
@@ -55,9 +62,11 @@
 }
 
 .admin-table td {
-  @apply p-5 text-sm align-middle;
+  @apply p-3 sm:p-5 text-xs sm:text-sm align-middle;
   color: rgba(255, 255, 255, 0.6);
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 [data-theme="light"] .admin-table td {
   color: rgba(0, 102, 178, 0.7);
@@ -147,7 +156,15 @@
 
 /* DASHBOARD ACTIONS */
 .admin-action-btn {
-  @apply flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-widest transition-all hover:-translate-y-1 shadow-xl hover:shadow-primary/20;
+  @apply flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-primary text-white font-black text-[9px] sm:text-[10px] uppercase tracking-widest transition-all hover:-translate-y-1 shadow-xl hover:shadow-primary/20;
+  min-height: 40px;
+  min-width: 40px;
+}
+
+@media (max-width: 640px) {
+  .admin-action-btn {
+    @apply px-3 py-2 text-[8px];
+  }
 }
 
 .admin-action-btn.secondary {
@@ -165,9 +182,9 @@
 }
 
 .login-card {
-  @apply p-10 max-w-md w-full rounded-[2.5rem] border border-white/10 relative overflow-y-auto;
+  @apply p-6 sm:p-8 md:p-10 max-w-md w-full rounded-2xl sm:rounded-[2.5rem] border border-white/10 relative overflow-y-auto;
   background: rgba(3, 7, 18, 0.8);
-  max-height: 90vh;
+  max-height: 85vh;
   backdrop-filter: blur(12px);
 }
 [data-theme="light"] .login-card {
@@ -175,12 +192,20 @@
   border-color: rgba(0, 102, 178, 0.25);
   box-shadow: 0 8px 32px rgba(0, 102, 178, 0.15);
 }
+/* Ensure light mode text readability */
+[data-theme="light"] .login-card h3,
+[data-theme="light"] .login-card h2,
+[data-theme="light"] .login-card p {
+  color: #04243a;
+}
 
 .login-field {
-  @apply w-full rounded-xl px-6 py-4 outline-none transition-all relative z-10;
+  @apply w-full rounded-lg sm:rounded-xl px-4 sm:px-6 py-2.5 sm:py-4 outline-none transition-all relative z-10;
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--color-foreground);
+  min-height: 44px;
+  font-size: 14px;
 }
 .login-field::placeholder {
   color: rgba(255, 255, 255, 0.1);
