@@ -61,6 +61,43 @@
   border-bottom-color: rgba(0, 102, 178, 0.2);
 }
 
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .login-field {
+  padding-right: 3rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: #fff;
+}
+
+[data-theme="light"] .password-toggle {
+  color: rgba(0, 102, 178, 0.5);
+}
+
+[data-theme="light"] .password-toggle:hover {
+  color: rgba(0, 102, 178, 0.8);
+}
 .admin-table td {
   @apply p-3 sm:p-5 text-xs sm:text-sm align-middle;
   color: rgba(255, 255, 255, 0.6);

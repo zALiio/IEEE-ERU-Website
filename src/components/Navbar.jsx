@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext'
 import flag from '../assets/img/falg-blue.webp'
 import '../styles/Navbar.css'
 import '../styles/Admin.css'
-import { Menu, X, ArrowUpRight, Lock, ShieldCheck, Fingerprint, LogIn, Sun, Moon } from 'lucide-react'
+import { Menu, X, ArrowUpRight, Lock, ShieldCheck, Fingerprint, LogIn, Sun, Moon, Eye, EyeOff } from 'lucide-react'
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -19,6 +19,7 @@ const Navbar = () => {
   const [showAdminLogin, setShowAdminLogin] = useState(false)
   const [loginData, setLoginData] = useState({ user: '', pass: '' })
   const [loginError, setLoginError] = useState(false)
+  const [showAdminPassword, setShowAdminPassword] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 40)
@@ -287,12 +288,22 @@ const Navbar = () => {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-white/40 uppercase ml-2">Secure Pass</p>
-                    <input 
-                      type="password" 
-                      placeholder="Enter Password"
-                      className={`login-field ${loginError ? 'border-red-500/50 bg-red-500/5' : ''}`}
-                      onChange={(e) => setLoginData({...loginData, pass: e.target.value})}
-                    />
+                    <div className="password-input-wrapper">
+                      <input 
+                        type={showAdminPassword ? 'text' : 'password'} 
+                        placeholder="Enter Password"
+                        className={`login-field ${loginError ? 'border-red-500/50 bg-red-500/5' : ''}`}
+                        onChange={(e) => setLoginData({...loginData, pass: e.target.value})}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminPassword((prev) => !prev)}
+                        className="password-toggle"
+                        aria-label={showAdminPassword ? 'Hide admin password' : 'Show admin password'}
+                      >
+                        {showAdminPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </div>
                  </div>
 

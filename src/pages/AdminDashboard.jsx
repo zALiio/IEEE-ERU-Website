@@ -150,7 +150,7 @@ const AdminDashboard = () => {
   /* ======= Portal management API calls ======= */
   const fetchPortalData = async () => {
     try {
-      const { data: members } = await supabase.from('members').select('id, member_id, name, committee, points, role').order('name', { ascending: true });
+      const { data: members } = await supabase.from('members').select('id, username, name, committee, points, role').order('name', { ascending: true });
       const { data: tasks } = await supabase.from('member_tasks').select('*').order('created_at', { ascending: false });
       const { data: logs } = await supabase.from('member_points_log').select('*').order('created_at', { ascending: false }).limit(200);
       const { data: actionLogs } = await supabase.from('admin_actions_log').select('*').order('created_at', { ascending: false }).limit(100);
@@ -167,7 +167,7 @@ const AdminDashboard = () => {
       console.error('Failed to fetch portal data', err);
       // keep the portal usable even if the optional admin log table is missing
       try {
-        const { data: members } = await supabase.from('members').select('id, member_id, name, committee, points, role').order('name', { ascending: true });
+        const { data: members } = await supabase.from('members').select('id, username, name, committee, points, role').order('name', { ascending: true });
         const { data: tasks } = await supabase.from('member_tasks').select('*').order('created_at', { ascending: false });
         const { data: logs } = await supabase.from('member_points_log').select('*').order('created_at', { ascending: false }).limit(200);
         setPortalMembers(members || []);
@@ -289,7 +289,7 @@ const AdminDashboard = () => {
   const submitTaskDraft = async (event) => {
     event.preventDefault();
     try {
-      const targetMember = portalMembers.find(member => member.member_id === taskDraft.assigned_to || String(member.id) === String(taskDraft.assigned_to));
+      const targetMember = portalMembers.find(member => member.username === taskDraft.assigned_to || String(member.id) === String(taskDraft.assigned_to));
       
       // Auto-calculate points based on difficulty
       const basePoints = 10;
@@ -326,13 +326,13 @@ const AdminDashboard = () => {
   const submitScoreDraft = async (event) => {
     event.preventDefault();
     try {
-      const targetMember = portalMembers.find(member => member.member_id === scoreDraft.memberId || String(member.id) === String(scoreDraft.memberId));
+      const targetMember = portalMembers.find(member => member.username === scoreDraft.memberId || String(member.id) === String(scoreDraft.memberId));
       if (!targetMember) throw new Error('Member not found');
 
       const delta = Number(scoreDraft.delta) || 0;
       const logReason = scoreDraft.adjustment_reason || scoreDraft.reason || 'Admin adjustment';
       await supabase.from('member_points_log').insert([{ 
-        member_id: targetMember.id, 
+            member_id: targetMember.id,
         task_id: null, 
         points: delta, 
         reason: logReason,
@@ -1123,7 +1123,7 @@ const AdminDashboard = () => {
                   <div key={m.id} className="flex items-center justify-between bg-white/[0.02] p-3 rounded-lg">
                     <div>
                       <div className="font-bold uppercase text-sm">{m.name}</div>
-                      <div className="text-[10px] text-white/40">{m.member_id || ''} • {m.committee || '—'}</div>
+                      <div className="text-[10px] text-white/40">{m.username || ''} • {m.committee || '—'}</div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="font-black text-lg">{m.points || 0}</div>
@@ -1144,9 +1144,9 @@ const AdminDashboard = () => {
 
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {(portalRankings || []).slice(0, 30).map(r => (
-                    <div key={r.member_id || r.id} className="flex items-center justify-between bg-white/[0.02] p-2 rounded">
+                    <div key={r.username || r.id} className="flex items-center justify-between bg-white/[0.02] p-2 rounded">
                       <div>
-                        <div className="text-sm font-bold">{r.name || r.member_id}</div>
+                        <div className="text-sm font-bold">{r.name || r.username}</div>
                         <div className="text-[10px] text-white/40">Rank #{r.rank} • {r.committee}</div>
                       </div>
                       <div className="font-black">{r.points || 0}</div>
@@ -1414,12 +1414,12 @@ const AdminDashboard = () => {
                     <div>
                       <label className="field-label !mb-2">Assign To Member</label>
                       <select className="login-field" value={taskDraft.assigned_to} onChange={(e) => {
-                        const selected = portalMembers.find(m => (m.member_id || m.id) === e.target.value);
+                        const selected = portalMembers.find(m => (m.username || m.id) === e.target.value);
                         setTaskDraft(prev => ({ ...prev, assigned_to: e.target.value, committee: selected?.committee || '' }));
                       }}>
                         <option value="">Select member</option>
                         {(portalMembers || []).filter(member => !taskDraft.committee || member.committee === taskDraft.committee).map(member => (
-                          <option key={member.id} value={member.member_id || member.id}>{member.name} ({member.committee})</option>
+                          <option key={member.id} value={member.username || member.id}>{member.name} ({member.committee})</option>
                         ))}
                       </select>
                     </div>
@@ -1465,7 +1465,7 @@ const AdminDashboard = () => {
                       <label className="field-label !mb-2">Member</label>
                       <select className="login-field" value={scoreDraft.memberId} onChange={(e) => setScoreDraft(prev => ({ ...prev, memberId: e.target.value }))}>
                         <option value="">Select member</option>
-                        {(portalMembers || []).map(member => <option key={member.id} value={member.member_id || member.id}>{member.name} - {member.member_id}</option>)}
+                        {(portalMembers || []).map(member => <option key={member.id} value={member.username || member.id}>{member.name} - {member.username}</option>)}
                       </select>
                     </div>
                     <div>

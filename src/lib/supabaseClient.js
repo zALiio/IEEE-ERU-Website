@@ -1,10 +1,102 @@
 import { createClient } from '@supabase/supabase-js';
+import membersCsv from '../../scripts/members-ready-for-import.csv?raw';
 
 // Use environment variables only (production-safe)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Simple in-memory mock used during local development when Supabase is not configured
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        field += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === ',' && !inQuotes) {
+      row.push(field);
+      field = '';
+      continue;
+    }
+
+    if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && next === '\n') {
+        i += 1;
+      }
+      row.push(field);
+      field = '';
+      if (row.some((cell) => cell.trim() !== '')) {
+        rows.push(row);
+      }
+      row = [];
+      continue;
+    }
+
+    field += char;
+  }
+
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    if (row.some((cell) => cell.trim() !== '')) {
+      rows.push(row);
+    }
+  }
+
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const headers = rows[0].map((value) => value.trim());
+  return rows.slice(1).map((values) => {
+    const record = {};
+    headers.forEach((header, index) => {
+      record[header] = (values[index] ?? '').trim();
+    });
+    return record;
+  });
+}
+
+function createMockMembers() {
+  try {
+    const importedRows = parseCsv(membersCsv);
+    if (importedRows.length > 0) {
+      return importedRows.map((row, index) => ({
+        id: index + 1,
+        username: row.username,
+        name: row.name,
+        phone: row.phone || null,
+        email: row.email || null,
+        committee: row.committee || null,
+        role: row.role || 'member',
+        points: Number(row.points || 0),
+        password_hash: '123456',
+        created_at: new Date().toISOString(),
+      }));
+    }
+  } catch (error) {
+    console.warn('Failed to seed mock members from CSV, falling back to examples', error);
+  }
+
+  return [
+    { id: 1, username: 'aliceexample', name: 'Alice Example', committee: 'Robotics', points: 120, role: 'Member', password_hash: '123456', created_at: new Date().toISOString() },
+    { id: 2, username: 'bobexample', name: 'Bob Example', committee: 'Media', points: 80, role: 'Volunteer', password_hash: '123456', created_at: new Date().toISOString() },
+    { id: 3, username: 'zahyadel', name: 'Zahy Adel', committee: 'all', points: 0, role: 'Vice Chairperson', password_hash: '123456', created_at: new Date().toISOString() }
+  ];
+}
+
 const createMockSupabase = () => {
   const db = {
     applications: [
@@ -16,10 +108,7 @@ const createMockSupabase = () => {
     events: [],
     suggestions: [],
     settings: [],
-    members: [
-      { id: 1, member_id: 'M001', name: 'Alice Example', committee: 'Robotics', points: 120, role: 'Member', created_at: new Date().toISOString() },
-      { id: 2, member_id: 'M002', name: 'Bob Example', committee: 'Media', points: 80, role: 'Volunteer', created_at: new Date().toISOString() }
-    ],
+    members: createMockMembers(),
     member_tasks: [],
     member_points_log: [],
     admin_actions_log: []
@@ -66,11 +155,27 @@ const createMockSupabase = () => {
       arr.forEach(r => { r.id = (db[table].length ? (db[table][db[table].length-1].id || db[table].length) + 1 : 1); r.created_at = new Date().toISOString(); db[table].push(r); });
       return { data: arr, error: null };
     };
-    const update = async function (payload) {
-      if (!this._filter) return { data: null, error: new Error('mock update requires eq filter') };
-      const rows = db[table].filter(r => String(r[this._filter.col]) === String(this._filter.val));
-      rows.forEach(r => Object.assign(r, payload));
-      return { data: rows, error: null };
+    const update = function (payload) {
+      const query = { _filters: [], _payload: payload };
+      query.eq = function (col, val) { query._filters.push({ type: 'eq', col, val }); return query; };
+      query.gt = function (col, val) { query._filters.push({ type: 'gt', col, val }); return query; };
+      query.then = async function (onFulfilled, onRejected) {
+        try {
+          const rows = (db[table] || []).filter((row) => query._filters.every((filter) => {
+            if (filter.type === 'eq') return String(row[filter.col]) === String(filter.val);
+            if (filter.type === 'gt') return Number(row[filter.col] ?? 0) > Number(filter.val);
+            return true;
+          }));
+          rows.forEach((row) => Object.assign(row, payload));
+          const result = { data: rows.slice(), error: null };
+          if (onFulfilled) onFulfilled(result);
+          return result;
+        } catch (err) {
+          if (onRejected) onRejected(err);
+          return { data: null, error: err };
+        }
+      };
+      return query;
     };
     const del = async function () {
       if (!this._filter) return { data: null, error: new Error('mock delete requires eq filter') };

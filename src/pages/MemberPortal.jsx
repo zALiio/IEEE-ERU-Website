@@ -15,12 +15,15 @@ const MemberPortal = () => {
   const [error, setError] = useState('');
   
   // Login form
-  const [loginForm, setLoginForm] = useState({ memberId: '', password: '' });
-  const [showPassword, setShowPassword] = useState(false);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [showPasswords, setShowPasswords] = useState({ login: false, current: false, next: false, confirm: false });
   const [showAddTask, setShowAddTask] = useState(false);
   const [showEditScore, setShowEditScore] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', points: 0, assigned_to: '' });
   const [scoreEdit, setScoreEdit] = useState({ memberId: '', delta: 0, reason: '' });
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState('');
 
   // Dashboard data
   const [activeTab, setActiveTab] = useState('tasks');
@@ -47,7 +50,9 @@ const MemberPortal = () => {
     }
   }, []);
 
-  const firstName = member?.name ? member.name.split(' ')[0] : (member?.member_id || 'Member');
+  const normalizeUsername = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, '');
+
+  const firstName = member?.name ? member.name.split(' ')[0] : (member?.username || 'Member');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -59,11 +64,11 @@ const MemberPortal = () => {
       const { data: members, error: queryError } = await supabase
         .from('members')
         .select('*')
-        .eq('member_id', loginForm.memberId.trim())
+        .eq('username', normalizeUsername(loginForm.username))
         .single();
 
       if (queryError || !members) {
-        throw new Error('Member ID not found');
+        throw new Error('Username not found');
       }
 
       // Simple password check (in production, use hashed comparison)
@@ -74,7 +79,7 @@ const MemberPortal = () => {
       // Store session
       const sessionData = {
         id: members.id,
-        member_id: members.member_id,
+        username: members.username,
         name: members.name,
         email: members.email,
         committee: members.committee,
@@ -84,7 +89,7 @@ const MemberPortal = () => {
 
       localStorage.setItem('member-session', JSON.stringify(sessionData));
       setMember(sessionData);
-      setLoginForm({ memberId: '', password: '' });
+      setLoginForm({ username: '', password: '' });
       setIsLoggedIn(true);
 
       await loadMemberData(members.id);
@@ -149,6 +154,51 @@ const MemberPortal = () => {
     setPointsHistory([]);
   };
 
+  const handleChangePassword = async () => {
+    try {
+      setPasswordError('');
+
+      if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+        throw new Error('Please fill in all password fields');
+      }
+
+      if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+        throw new Error('New passwords do not match');
+      }
+
+      if (passwordForm.newPassword.length < 4) {
+        throw new Error('Password must be at least 4 characters');
+      }
+
+      const { data: currentMember, error: currentError } = await supabase
+        .from('members')
+        .select('id, password_hash')
+        .eq('id', member.id)
+        .single();
+
+      if (currentError || !currentMember) {
+        throw currentError || new Error('Member not found');
+      }
+
+      if (String(currentMember.password_hash || '') !== passwordForm.currentPassword) {
+        throw new Error('Current password is incorrect');
+      }
+
+      const { error: updateError } = await supabase
+        .from('members')
+        .update({ password_hash: passwordForm.newPassword })
+        .eq('id', member.id);
+
+      if (updateError) throw updateError;
+
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowChangePassword(false);
+      alert('Password updated successfully');
+    } catch (err) {
+      setPasswordError(err.message || 'Failed to update password');
+    }
+  };
+
   // Admin: create a new task
   const handleCreateTask = async () => {
     try {
@@ -178,7 +228,7 @@ const MemberPortal = () => {
   // Admin: update member score manually
   const handleUpdateScore = async () => {
     try {
-      if (!scoreEdit.memberId) throw new Error('Member ID required');
+      if (!scoreEdit.memberId) throw new Error('Username required');
       // insert into points log
       const entry = {
         member_id: scoreEdit.memberId,
@@ -192,7 +242,7 @@ const MemberPortal = () => {
       if (insertError) throw insertError;
 
       // update members points
-      const { data: memberRow, error: memberError } = await supabase.from('members').select('id, points').eq('member_id', scoreEdit.memberId).single();
+      const { data: memberRow, error: memberError } = await supabase.from('members').select('id, points').eq('username', scoreEdit.memberId).single();
       if (memberError || !memberRow) throw memberError || new Error('Member not found');
 
       const newPoints = (memberRow.points || 0) + (scoreEdit.delta || 0);
@@ -308,13 +358,13 @@ const MemberPortal = () => {
 
             <form onSubmit={handleLogin} className="login-form">
               <div className="form-group">
-                <label className="form-label">Member ID</label>
+                <label className="form-label">Username</label>
                 <input
                   type="text"
-                  placeholder="e.g., ERU001"
-                  value={loginForm.memberId}
+                  placeholder="Enter your username"
+                  value={loginForm.username}
                   onChange={(e) => {
-                    setLoginForm({ ...loginForm, memberId: e.target.value });
+                    setLoginForm({ ...loginForm, username: e.target.value });
                     setError('');
                   }}
                   className="form-input"
@@ -326,7 +376,7 @@ const MemberPortal = () => {
                 <label className="form-label">Password</label>
                 <div className="password-input-wrapper">
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPasswords.login ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={loginForm.password}
                     onChange={(e) => {
@@ -337,10 +387,10 @@ const MemberPortal = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowPasswords((prev) => ({ ...prev, login: !prev.login }))}
                     className="password-toggle"
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPasswords.login ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
@@ -396,6 +446,7 @@ const MemberPortal = () => {
             </div>
           </div>
           <div className="header-actions">
+            <button className="btn secondary" onClick={() => setShowChangePassword(true)}>Change Password</button>
             {member?.role === 'admin' && (
               <>
                 <button className="btn secondary" onClick={() => setShowAddTask(true)}>Add Task</button>
@@ -759,6 +810,87 @@ const MemberPortal = () => {
                   <div className="modal-actions">
                     <button className="btn secondary" onClick={() => setShowEditScore(false)}>Cancel</button>
                     <button className="btn primary">Update Score</button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Change Password Modal */}
+        <AnimatePresence>
+          {showChangePassword && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="modal-overlay"
+              onClick={() => setShowChangePassword(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 className="modal-title">Change Password</h2>
+                <div className="modal-form">
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showPasswords.current ? 'text' : 'password'}
+                      placeholder="Current password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                      className="form-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords((prev) => ({ ...prev, current: !prev.current }))}
+                      className="password-toggle"
+                      aria-label={showPasswords.current ? 'Hide current password' : 'Show current password'}
+                    >
+                      {showPasswords.current ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showPasswords.next ? 'text' : 'password'}
+                      placeholder="New password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                      className="form-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords((prev) => ({ ...prev, next: !prev.next }))}
+                      className="password-toggle"
+                      aria-label={showPasswords.next ? 'Hide new password' : 'Show new password'}
+                    >
+                      {showPasswords.next ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showPasswords.confirm ? 'text' : 'password'}
+                      placeholder="Confirm new password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                      className="form-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords((prev) => ({ ...prev, confirm: !prev.confirm }))}
+                      className="password-toggle"
+                      aria-label={showPasswords.confirm ? 'Hide confirm password' : 'Show confirm password'}
+                    >
+                      {showPasswords.confirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {passwordError && <div className="error-box">{passwordError}</div>}
+                  <div className="modal-actions">
+                    <button className="btn secondary" onClick={() => setShowChangePassword(false)}>Cancel</button>
+                    <button className="btn primary" onClick={handleChangePassword}>Update Password</button>
                   </div>
                 </div>
               </motion.div>
