@@ -82,15 +82,18 @@ const JoinUsPage = () => {
     setStatus('submitting');
     setErrorMsg('');
 
-    try {
-      if (!cvFile) throw new Error("A CV file is required to complete the mission.");
-      
-      const fileExt = cvFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${formData.firstName}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('cv-uploads').upload(fileName, cvFile);
-      if (uploadError) throw uploadError;
+        try {
+      let publicUrl = null;
 
-      const { data: { publicUrl } } = supabase.storage.from('cv-uploads').getPublicUrl(fileName);
+      if (cvFile) {
+        const fileExt = cvFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${formData.firstName}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('cv-uploads').upload(fileName, cvFile);
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage.from('cv-uploads').getPublicUrl(fileName);
+        publicUrl = data.publicUrl;
+      }
 
       const { error: dbError } = await supabase.from('applications').insert([{
         first_name: formData.firstName,
@@ -145,6 +148,7 @@ const JoinUsPage = () => {
       setCvFile(null);
       
       setStatus('success');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setErrorMsg(err.message);
       setStatus('error');
@@ -361,7 +365,7 @@ const JoinUsPage = () => {
                    </div>
                    <div className="space-y-8">
                       <div className={`upload-zone group ${cvFile ? 'border-primary/40 bg-primary/5' : ''}`}>
-                         <input type="file" onChange={handleFileChange} required className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                         <input type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
                          <div className="file-info">
                             <Paperclip size={48} className={`transition-transform duration-500 group-hover:-translate-y-2 ${cvFile ? 'text-primary' : 'text-white/20'}`} />
                             <div className="space-y-1">
