@@ -38,14 +38,14 @@ const EventDetailPage = () => {
   }, [id]);
 
   if (loading) return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 text-primary font-black uppercase tracking-[1em]">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-primary font-black uppercase tracking-[1em]">
        <Loader2 className="animate-spin" size={40} />
        Decrypting Mission Intel...
     </div>
   );
 
   if (!event) return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center text-white">
        <h1 className="text-4xl font-black mb-8 italic text-primary">404_INTEL_GHOST</h1>
        <p className="text-white/40 mb-12">This mission log does not exist in the neural network.</p>
        <Link to="/events" className="px-8 py-3 bg-white/5 border border-white/10 rounded-full hover:bg-primary transition-all text-sm font-black uppercase tracking-widest">
@@ -63,7 +63,7 @@ const EventDetailPage = () => {
   const prevSlide = () => setActiveImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
 
   return (
-    <div className="event-detail-page bg-[#020408]">
+    <div className="event-detail-page bg-background">
       <Meta 
         title={event.title}
         description={event.description.substring(0, 160)}
