@@ -232,14 +232,6 @@ const Navbar = () => {
                 >
                    JOIN US
                 </Link>
-                <Link
-                  to="/member"
-                  className="hud-secondary-btn inline-flex items-center justify-center gap-2 w-full mt-3"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <LogIn size={14} />
-                  IEEEIANS Hub
-                </Link>
               </motion.div>
             </div>
 
