@@ -14,14 +14,16 @@ const ImageCropper = ({ file, aspectRatio = 1, onCancel, onComplete }) => {
 
   const cropWindow = useMemo(() => {
     if (!image) return null
-    const imageRatio = image.width / image.height
-    let width = image.width
-    let height = image.height
+    const sourceWidth = image.naturalWidth
+    const sourceHeight = image.naturalHeight
+    const imageRatio = sourceWidth / sourceHeight
+    let width = sourceWidth
+    let height = sourceHeight
 
     if (imageRatio > aspectRatio) {
-      width = image.height * aspectRatio
+      width = sourceHeight * aspectRatio
     } else {
-      height = image.width / aspectRatio
+      height = sourceWidth / aspectRatio
     }
 
     width /= zoom
@@ -32,8 +34,8 @@ const ImageCropper = ({ file, aspectRatio = 1, onCancel, onComplete }) => {
     return {
       width,
       height,
-      x: image.width / 2 - width / 2 + (maxX * offsetX) / 100,
-      y: image.height / 2 - height / 2 + (maxY * offsetY) / 100,
+      x: sourceWidth / 2 - width / 2 + (maxX * offsetX) / 100,
+      y: sourceHeight / 2 - height / 2 + (maxY * offsetY) / 100,
     }
   }, [aspectRatio, image, offsetX, offsetY, zoom])
 
