@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { ArrowUpRight } from 'lucide-react'
 import logo from '../assets/img/logo-blue.webp'
 import '../styles/About.css'
 
@@ -105,6 +107,15 @@ const About = () => {
             </div>
           </motion.div>
 
+        </div>
+
+        <div className="mt-14 flex justify-center">
+          <Link
+            to="/join"
+            className="inline-flex items-center gap-3 rounded-full border border-primary/40 bg-primary/10 px-8 py-4 text-xs font-black uppercase tracking-[0.3em] text-white transition-all hover:-translate-y-1 hover:bg-primary hover:border-primary"
+          >
+            Apply Now <ArrowUpRight size={16} />
+          </Link>
         </div>
       </div>
     </section>

@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Award, GraduationCap, Microscope, ShieldCheck, Zap, Globe, FileText, Users } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { getSettingValue } from '../lib/supabaseSettings';
+import { SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards';
 import '../styles/Counselor.css';
 
-import counselorImg from '../assets/img/counselor.webp';
-
 const Counselor = () => {
+  const [counselor, setCounselor] = useState(SITE_CARD_DEFAULTS.counselor);
+
+  useEffect(() => {
+    const fetchCards = async () => {
+      const { data, error } = await supabase.from('settings').select('key, value').eq('key', SITE_CARDS_KEY).single();
+      if (error && error.code !== 'PGRST116') {
+        console.error('Counselor card fetch failed:', error);
+        return;
+      }
+      const cards = getSettingValue(data ? [data] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS);
+      if (cards.counselor) setCounselor(cards.counselor);
+    };
+    fetchCards();
+  }, []);
+
   const stats = [
     { value: '73+', label: 'INTERNATL AWARDS', icon: Award },
     { value: '600+', label: 'RESEARCH PAPERS', icon: FileText },
@@ -37,6 +53,8 @@ const Counselor = () => {
     { title: "Global Senior Member", text: "Distinguished IEEE, ACM, and SPIE Registered Professional Engineer." }
   ];
 
+  if (!counselor) return null;
+
   return (
     <section className="counselor-section" id="counselor">
       <div className="counselor-container">
@@ -65,11 +83,11 @@ const Counselor = () => {
               <div className="hud-tag-top">BIO_DATA_SCAN_V2</div>
               <div className="counselor-scan-line" />
               <img 
-                src={counselorImg} 
-                alt="Dr. Wael Badawy" 
+                src={counselor.image_url}
+                alt={counselor.name}
                 className="counselor-img"
                 onError={(e) => {
-                  e.target.src = `https://ui-avatars.com/api/?name=Wael+Badawy&background=007acc&color=fff&size=512`;
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(counselor.name)}&background=007acc&color=fff&size=512`;
                 }}
               />
               <div className="hud-tag-bottom">ERU_CMD_CENTER</div>
@@ -83,8 +101,8 @@ const Counselor = () => {
             className="counselor-bio-wrap"
           >
             <div className="counselor-name-block">
-              <span className="counselor-rank">Senior Branch Counselor</span>
-              <h3 className="counselor-full-name">DR. WAEL <span className="text-primary">BADAWY</span></h3>
+              <span className="counselor-rank">{counselor.position}</span>
+              <h3 className="counselor-full-name">{counselor.name}</h3>
               <p className="counselor-intro-text">
                 Visionary leader in innovation and academic excellence. 
                 Combining over 60,000 hours of strategic education with a legacy of globally recognized contributions.

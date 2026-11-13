@@ -1,48 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Users, Zap, FileText, ChevronRight, Binary } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { getSettingValue } from '../lib/supabaseSettings';
+import { SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards';
 import '../styles/Officers.css';
 
-import tasbeehImg from '../assets/img/tasbeeh.webp';
-import zahyImg from '../assets/img/zahy.webp';
-import azazyImg from '../assets/img/azazy.webp';
-import hamssaImg from '../assets/img/hamssa.webp';
-
 const Officers = () => {
-  const highCommand = [
-    {
-       name: "TASBEEH MAHMOUD",
-       role: "BRANCH_CHAIR",
-       icon: ShieldCheck,
-       clearance: "CLEARANCE_LVL_MAX",
-       id: "CH-001",
-       img: tasbeehImg
-    },
-    {
-       name: "ZAHY ADEL",
-       role: "VICE_CHAIR",
-       icon: Users,
-       clearance: "CLEARANCE_LVL_01",
-       id: "VC-001",
-       img: zahyImg
-    },
-    {
-       name: "MOHAMED EL AZAZY",
-       role: "TREASURER",
-       icon: Zap,
-       clearance: "CLEARANCE_LVL_01",
-       id: "TR-001",
-       img: azazyImg
-    },
-    {
-       name: "HAMSSA HOSSAM",
-       role: "SECRETARY",
-       icon: FileText,
-       clearance: "CLEARANCE_LVL_01",
-       id: "SC-001",
-       img: hamssaImg
-    }
-  ];
+  const [highCommand, setHighCommand] = useState(SITE_CARD_DEFAULTS.officers);
+
+  useEffect(() => {
+    const fetchCards = async () => {
+      const { data, error } = await supabase.from('settings').select('key, value').eq('key', SITE_CARDS_KEY).single();
+      if (error && error.code !== 'PGRST116') {
+        console.error('High command cards fetch failed:', error);
+        return;
+      }
+      const cards = getSettingValue(data ? [data] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS);
+      setHighCommand(cards.officers || []);
+    };
+    fetchCards();
+  }, []);
+
+  const iconMap = { ShieldCheck, Users, Zap, FileText };
 
   const fadeUp = {
     initial: { opacity: 0, y: 30 },
@@ -72,9 +52,11 @@ const Officers = () => {
 
         {/* Tactical Formation (Grid) */}
         <div className="officers-grid">
-          {highCommand.map((officer, i) => (
+          {highCommand.map((officer, i) => {
+            const OfficerIcon = iconMap[officer.icon] || ShieldCheck;
+            return (
             <motion.div 
-               key={i}
+               key={officer.id || i}
                initial={{ opacity: 0, scale: 0.9, y: 50 }}
                whileInView={{ opacity: 1, scale: 1, y: 0 }}
                viewport={{ once: true }}
@@ -93,7 +75,7 @@ const Officers = () => {
                  {/* Profile Portrait */}
                  <div className="officer-img-wrap">
                     <img 
-                       src={officer.img} 
+                       src={officer.image_url}
                        alt={officer.name} 
                        className="officer-img"
                        onError={(e) => {
@@ -105,7 +87,7 @@ const Officers = () => {
                  {/* Tactical Data Overlay */}
                  <div className="officer-overlay">
                     <div className="officer-role-tag">
-                       <officer.icon size={10} />
+                       <OfficerIcon size={10} />
                        {officer.role}
                     </div>
                     <div className="officer-name">{officer.name}</div>
@@ -119,7 +101,8 @@ const Officers = () => {
                  </div>
                </div>
             </motion.div>
-          ))}
+            )
+          })}
         </div>
 
       </div>

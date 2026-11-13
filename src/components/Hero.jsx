@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { ArrowUpRight } from 'lucide-react'
 import heroImg from '../assets/img/home.webp'
 import '../styles/Hero.css'
 
@@ -51,6 +53,13 @@ const Hero = () => {
                className="tag-line-right" 
             />
           </motion.div>
+
+          <Link
+            to="/join"
+            className="mt-10 inline-flex items-center gap-3 rounded-full bg-primary px-8 py-4 text-xs font-black uppercase tracking-[0.3em] text-white transition-all hover:-translate-y-1 hover:bg-primary/90 hover:shadow-[0_12px_30px_rgba(0,122,204,0.35)]"
+          >
+            Apply Now <ArrowUpRight size={16} />
+          </Link>
         </motion.div>
       </div>
 

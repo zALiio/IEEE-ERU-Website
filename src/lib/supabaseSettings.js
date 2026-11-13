@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { SITE_CARD_DEFAULTS } from './siteCards'
 
 export const DEFAULT_SITE_SETTINGS = {
   is_recruitment_open: true,
@@ -11,6 +12,7 @@ export const DEFAULT_SITE_SETTINGS = {
     instagram: 'https://instagram.com/ieee_erusb/',
     linkedin: 'https://linkedin.com/company/ieee-eru-sb/',
   },
+  site_cards: SITE_CARD_DEFAULTS,
 }
 
 const serializeSettingValue = (value) => {

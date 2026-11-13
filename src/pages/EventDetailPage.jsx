@@ -215,7 +215,7 @@ const EventDetailPage = () => {
          <h2 className="text-3xl md:text-5xl font-black text-white uppercase mb-12 tracking-tighter">Ready for the Next <span className="text-primary">Operation?</span></h2>
          <Link to="/join" className="group relative inline-flex items-center gap-4 px-12 py-6 bg-primary text-white font-black uppercase tracking-[0.3em] rounded-full overflow-hidden">
             <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500" />
-            <span className="relative z-10">Join the Collective</span>
+            <span className="relative z-10">Apply Now</span>
             <Zap size={20} className="relative z-10" />
          </Link>
       </section>

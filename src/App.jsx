@@ -12,7 +12,7 @@ const BoardPage = lazy(() => import('./pages/BoardPage'))
 const EventsPage = lazy(() => import('./pages/EventsPage'))
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 const JoinUsPage = lazy(() => import('./pages/JoinUsPage'))
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const AdminRoute = lazy(() => import('./components/AdminRoute'))
 
 function App() {
   return (
@@ -37,7 +37,7 @@ function App() {
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/:id" element={<EventDetailPage />} />
               <Route path="/join" element={<JoinUsPage />} />
-              <Route path="/dashboard" element={<AdminDashboard />} /> {/* Hidden dashboard route */}
+              <Route path="/dashboard" element={<AdminRoute />} />
             </Routes>
           </Suspense>
         </main>

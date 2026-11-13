@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { ensureSettingsDefaults, getSettingValue } from '../lib/supabaseSettings';
+import { cloneSiteCards, SITE_CARDS_KEY } from '../lib/siteCards';
+import ImageCropper from '../components/ImageCropper';
 import { 
   Users, Search, ExternalLink, 
   Trash2, RefreshCw, ChevronRight, LayoutDashboard, Settings, Shield,
@@ -38,6 +40,12 @@ const AdminDashboard = () => {
   const [isEditingHighBoard, setIsEditingHighBoard] = useState(false);
   const [editingHighBoard, setEditingHighBoard] = useState(null);
   const [newHighBoard, setNewHighBoard] = useState({ name: '', role: '', bio: '', display_order: 0, imageFile: null });
+  const [siteCards, setSiteCards] = useState(cloneSiteCards());
+  const [editingSiteCard, setEditingSiteCard] = useState(null);
+  const [siteCardType, setSiteCardType] = useState(null);
+  const [isSavingSiteCards, setIsSavingSiteCards] = useState(false);
+  const [cropRequest, setCropRequest] = useState(null);
+  const [cropQueue, setCropQueue] = useState([]);
 
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [isEditingEvent, setIsEditingEvent] = useState(false);
@@ -82,6 +90,10 @@ const AdminDashboard = () => {
     settings: {
       label: 'Settings',
       description: 'Update the public contact details shown across the website.',
+    },
+    site_cards: {
+      label: 'Site Cards',
+      description: 'Add, edit, or remove leadership and committee cards shown across the website.',
     },
   };
 
@@ -159,6 +171,89 @@ const AdminDashboard = () => {
            console.error('Footer settings parse failed:', error);
          }
       }
+
+      const savedCards = getSettingValue(data, SITE_CARDS_KEY, null);
+      if (savedCards) setSiteCards(savedCards);
+    }
+  };
+
+  const saveSiteCards = async (cards) => {
+    setIsSavingSiteCards(true);
+    try {
+      const { data: existingRows, error: selectError } = await supabase
+        .from('settings')
+        .select('id')
+        .eq('key', SITE_CARDS_KEY);
+      if (selectError) throw selectError;
+
+      const serialized = JSON.stringify(cards);
+      const result = existingRows && existingRows.length > 0
+        ? await supabase.from('settings').update({ value: serialized }).eq('key', SITE_CARDS_KEY)
+        : await supabase.from('settings').insert([{ key: SITE_CARDS_KEY, value: serialized }]);
+      if (result.error) throw result.error;
+      setSiteCards(cards);
+      setEditingSiteCard(null);
+      setSiteCardType(null);
+    } catch (error) {
+      console.error('Site cards save failed:', error);
+      alert(error.message);
+    } finally {
+      setIsSavingSiteCards(false);
+    }
+  };
+
+  const editSiteCard = (type, card) => {
+    setSiteCardType(type);
+    setEditingSiteCard({ ...card, imageFile: null });
+  };
+
+  const addSiteCard = (type) => {
+    const newCard = type === 'officers'
+      ? { id: `officer-${Date.now()}`, name: '', role: '', clearance: 'CLEARANCE_LVL_01', code: 'NEW-001', image_url: '', icon: 'ShieldCheck' }
+      : type === 'committees'
+        ? { id: `committee-${Date.now()}`, name: '', summary: '', responsibilities: [], image_url: '', icon: 'Settings' }
+        : { id: `counselor-${Date.now()}`, name: '', position: '', image_url: '' };
+    editSiteCard(type, newCard);
+  };
+
+  const deleteSiteCard = async (type, id) => {
+    if (!confirm('Delete this site card?')) return;
+    const cards = {
+      ...siteCards,
+      [type]: type === 'counselor' ? null : siteCards[type].filter(card => card.id !== id),
+    };
+    await saveSiteCards(cards);
+  };
+
+  const updateSiteCard = async (event) => {
+    event.preventDefault();
+    setIsSavingSiteCards(true);
+    try {
+      let imageUrl = editingSiteCard.image_url;
+      if (editingSiteCard.imageFile) {
+        const webp = await convertToWebP(editingSiteCard.imageFile);
+        const name = `${Date.now()}_site_card.webp`;
+        const { error: uploadError } = await supabase.storage.from('member-avatars').upload(name, webp, { contentType: 'image/webp' });
+        if (uploadError) throw uploadError;
+        const { data: publicData } = supabase.storage.from('member-avatars').getPublicUrl(name);
+        imageUrl = publicData.publicUrl;
+      }
+
+      const updatedCard = { ...editingSiteCard, image_url: imageUrl };
+      delete updatedCard.imageFile;
+      const cards = {
+        ...siteCards,
+        [siteCardType]: siteCardType === 'counselor'
+          ? updatedCard
+          : siteCards[siteCardType].some(card => card.id === updatedCard.id)
+            ? siteCards[siteCardType].map(card => card.id === updatedCard.id ? updatedCard : card)
+            : [...siteCards[siteCardType], updatedCard],
+      };
+      await saveSiteCards(cards);
+    } catch (error) {
+      console.error('Site card update failed:', error);
+      alert(error.message);
+      setIsSavingSiteCards(false);
     }
   };
 
@@ -378,18 +473,43 @@ const AdminDashboard = () => {
               reject(err);
             }
           };
-          img.onerror = (e) => {
+
+          img.onerror = () => {
             clearTimeout(timer);
             reject(new Error('Failed to load image for processing'));
           };
         };
-        reader.onerror = (e) => {
+        reader.onerror = () => {
           reject(new Error('Failed to read image file'));
         };
       } catch (err) {
         reject(err);
       }
     });
+  };
+
+  const openImageCropper = (file, onComplete, aspectRatio) => {
+    if (!file) return;
+    setCropRequest({ file, onComplete, aspectRatio });
+  };
+
+  const queueImageCrops = (files, onComplete, aspectRatio) => {
+    const requests = files.filter(Boolean).map(file => ({ file, onComplete, aspectRatio }));
+    if (requests.length === 0) return;
+    const [first, ...remaining] = requests;
+    setCropQueue(remaining);
+    setCropRequest(first);
+  };
+
+  const handleCropComplete = (croppedFile) => {
+    cropRequest?.onComplete(croppedFile);
+    if (cropQueue.length > 0) {
+      const [next, ...remaining] = cropQueue;
+      setCropQueue(remaining);
+      setCropRequest(next);
+    } else {
+      setCropRequest(null);
+    }
   };
 
   const fetchBestMembers = async () => {
@@ -659,8 +779,9 @@ const AdminDashboard = () => {
            )}
            {activeTab === 'best_members' && <button onClick={() => setIsAddingMember(true)} className="admin-action-btn"><Plus size={14} /> Add Best Member</button>}
            {activeTab === 'high_board' && <button onClick={() => setIsAddingHighBoard(true)} className="admin-action-btn"><Plus size={14} /> Add High Board Member</button>}
+           {activeTab === 'site_cards' && <button onClick={() => addSiteCard('officers')} className="admin-action-btn"><Plus size={14} /> Add Site Card</button>}
            {activeTab === 'events' && <button onClick={() => setIsAddingEvent(true)} className="admin-action-btn"><Plus size={14} /> Add Event</button>}
-           <button onClick={() => { fetchApplications(); fetchBestMembers(); fetchHighBoardMembers(); fetchEvents(); fetchSuggestions(); fetchSettings(); fetchPortalData(); }} className="admin-action-btn secondary"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Data</button>
+           <button onClick={() => { fetchApplications(); fetchBestMembers(); fetchHighBoardMembers(); fetchEvents(); fetchSuggestions(); fetchSettings(); }} className="admin-action-btn secondary"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Data</button>
           </div>
         </div>
 
@@ -690,8 +811,8 @@ const AdminDashboard = () => {
         </div>
 
           <div className="flex flex-wrap gap-4 mb-10 p-2 bg-white/[0.02] border border-white/5 rounded-2xl w-fit">
-            {['applications', 'best_members', 'high_board', 'events', 'suggestions', 'settings'].map(tab => (
-           <button key={tab} onClick={async () => { setActiveTab(tab); if (tab === 'portal') await fetchPortalData(); }} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-white/30 hover:text-white'}`}>
+            {['applications', 'best_members', 'high_board', 'site_cards', 'events', 'suggestions', 'settings'].map(tab => (
+           <button key={tab} onClick={() => setActiveTab(tab)} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-white/30 hover:text-white'}`}>
              {tabMeta[tab].label}
              </button>
            ))}
@@ -766,6 +887,40 @@ const AdminDashboard = () => {
                  </div>
                 ))}
               </div>
+        ) : activeTab === 'site_cards' ? (
+           <div className="space-y-10">
+             {[
+               ['officers', 'High Command'],
+               ['counselor', 'Counselor'],
+               ['committees', 'Committees'],
+             ].map(([type, label]) => {
+               const cards = type === 'counselor' ? (siteCards.counselor ? [siteCards.counselor] : []) : siteCards[type] || [];
+               return (
+                 <div key={type} className="admin-card">
+                   <div className="flex items-center justify-between gap-4 mb-6">
+                     <h3 className="text-2xl font-black uppercase">{label}</h3>
+                     {type !== 'counselor' && <button onClick={() => addSiteCard(type)} className="admin-action-btn secondary"><Plus size={14} /> Add</button>}
+                   </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                     {cards.map(card => (
+                       <div key={card.id} className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4 group">
+                         {card.image_url ? <img src={card.image_url} alt="" className="w-14 h-14 rounded-lg object-cover object-top border border-white/10" /> : <div className="w-14 h-14 rounded-lg bg-primary/10 border border-primary/20" />}
+                         <div className="min-w-0 flex-grow">
+                           <h4 className="font-bold text-white uppercase truncate">{card.name || 'Unnamed card'}</h4>
+                           <p className="text-[10px] text-primary/60 font-black uppercase truncate">{card.role || card.position || 'No position'}</p>
+                         </div>
+                         <div className="flex gap-2">
+                           <button onClick={() => editSiteCard(type, card)} className="p-2 bg-white/5 rounded-lg text-white hover:bg-primary"><Edit size={13} /></button>
+                           <button onClick={() => deleteSiteCard(type, card.id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white"><Trash2 size={13} /></button>
+                         </div>
+                       </div>
+                     ))}
+                     {cards.length === 0 && <p className="text-white/30 text-sm">No cards configured.</p>}
+                   </div>
+                 </div>
+               );
+             })}
+           </div>
         ) : activeTab === 'settings' ? (
            <div className="space-y-6">
            <div className="admin-card max-w-2xl">
@@ -921,6 +1076,33 @@ const AdminDashboard = () => {
             </div>
           )}
 
+           {editingSiteCard && (
+              <div className="admin-login-overlay px-4">
+                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="login-card large">
+                  <div className="flex items-center gap-4 mb-10 text-primary">
+                    <Image size={32} />
+                    <div className="flex-grow"><h3 className="text-2xl font-black uppercase">Site Card Editor</h3><p className="text-[10px] text-white/20 uppercase tracking-[0.5em]">{siteCardType}</p></div>
+                    <button onClick={() => { setEditingSiteCard(null); setSiteCardType(null); }} className="text-3xl text-white/10 hover:text-white">&times;</button>
+                  </div>
+                  <form onSubmit={updateSiteCard} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div><label className="field-label">Name</label><input required value={editingSiteCard.name || ''} onChange={e => setEditingSiteCard({ ...editingSiteCard, name: e.target.value })} className="login-field" /></div>
+                      <div><label className="field-label">Position / Role</label><input required value={editingSiteCard.role || editingSiteCard.position || ''} onChange={e => setEditingSiteCard({ ...editingSiteCard, ...(siteCardType === 'counselor' ? { position: e.target.value } : { role: e.target.value }) })} className="login-field" /></div>
+                      {siteCardType === 'committees' && <div className="md:col-span-2"><label className="field-label">Summary</label><textarea value={editingSiteCard.summary || ''} onChange={e => setEditingSiteCard({ ...editingSiteCard, summary: e.target.value })} className="login-field h-24 pt-4" /></div>}
+                      <div className="md:col-span-2">
+                        <label className="field-label">Photo</label>
+                        <div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden">
+                          <input type="file" accept="image/*" onChange={e => openImageCropper(e.target.files[0], file => setEditingSiteCard({ ...editingSiteCard, imageFile: file }), siteCardType === 'counselor' ? 3 / 4 : 1)} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
+                          <p className="text-[10px] font-black text-white/20 uppercase">{editingSiteCard.imageFile?.name || 'Choose Image'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <button type="submit" disabled={isSavingSiteCards} className="admin-action-btn w-full justify-center py-5">{isSavingSiteCards ? 'Saving...' : 'Save Site Card'}</button>
+                  </form>
+                </motion.div>
+              </div>
+           )}
+
            {(isAddingMember || isEditingMember) && (
               <div className="admin-login-overlay px-4">
                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="login-card large">
@@ -932,7 +1114,7 @@ const AdminDashboard = () => {
                           <div><label className="field-label">Operational Role</label><input type="text" required placeholder="Role" value={isEditingMember ? editingMember.role : newMember.role} onChange={e => isEditingMember ? setEditingMember({...editingMember, role: e.target.value}) : setNewMember({...newMember, role: e.target.value})} className="login-field" /></div>
                           <div><label className="field-label">Unit Designation</label><input type="text" required placeholder="Unit Code" value={isEditingMember ? editingMember.unit : newMember.unit} onChange={e => isEditingMember ? setEditingMember({...editingMember, unit: e.target.value}) : setNewMember({...newMember, unit: e.target.value})} className="login-field" /></div>
                           <div><label className="field-label">Rank Level</label><input type="text" required placeholder="Rank" value={isEditingMember ? editingMember.rank : newMember.rank} onChange={e => isEditingMember ? setEditingMember({...editingMember, rank: e.target.value}) : setNewMember({...newMember, rank: e.target.value})} className="login-field" /></div>
-                          <div className="md:col-span-2"><label className="field-label">Identity Visual (Photo)</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" onChange={e => isEditingMember ? setEditingMember({...editingMember, imageFile: e.target.files[0]}) : setNewMember({...newMember, imageFile: e.target.files[0]})} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Image size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingMember ? editingMember.imageFile?.name : newMember.imageFile?.name) || 'Choose Image'}</p></div></div></div>
+                          <div className="md:col-span-2"><label className="field-label">Identity Visual (Photo)</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" accept="image/*" onChange={e => openImageCropper(e.target.files[0], file => isEditingMember ? setEditingMember({...editingMember, imageFile: file}) : setNewMember({...newMember, imageFile: file}), 1)} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Image size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingMember ? editingMember.imageFile?.name : newMember.imageFile?.name) || 'Choose Image'}</p></div></div></div>
                        </div>
                        <button type="submit" className="admin-action-btn w-full justify-center py-5">{loading ? 'Transmitting...' : 'Register Operative'}</button>
                     </form>
@@ -955,8 +1137,8 @@ const AdminDashboard = () => {
                           <div className="md:col-span-2"><label className="field-label">Link / Registration URL</label><div className="relative"><LinkIcon size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/40" /><input type="url" value={isEditingEvent ? (editingEvent.external_link || '') : newEvent.external_link} onChange={e => isEditingEvent ? setEditingEvent({...editingEvent, external_link: e.target.value}) : setNewEvent({...newEvent, external_link: e.target.value})} className="login-field !pl-14" /></div></div>
                           <div><label className="field-label">Date</label><input type="text" required value={isEditingEvent ? editingEvent.date : newEvent.date} onChange={e => isEditingEvent ? setEditingEvent({...editingEvent, date: e.target.value}) : setNewEvent({...newEvent, date: e.target.value})} className="login-field"/></div>
                           <div><label className="field-label">Location</label><input type="text" required value={isEditingEvent ? editingEvent.location : newEvent.location} onChange={e => isEditingEvent ? setEditingEvent({...editingEvent, location: e.target.value}) : setNewEvent({...newEvent, location: e.target.value})} className="login-field"/></div>
-                          <div className="md:col-span-2"><label className="field-label">Cover Image</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" accept="image/*" onChange={e => isEditingEvent ? setEditingEvent({...editingEvent, imageFile: e.target.files[0] || null}) : setNewEvent({...newEvent, imageFile: e.target.files[0] || null})} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Image size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingEvent ? editingEvent.imageFile?.name : newEvent.imageFile?.name) || 'Choose Cover Image'}</p></div></div></div>
-                          <div className="md:col-span-2"><label className="field-label">Gallery Images {((isEditingEvent ? editingEvent.category : newEvent.category) === 'PAST_EVENT') ? '(Past Event Only)' : '(Optional)'}</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" accept="image/*" multiple onChange={e => { const files = Array.from(e.target.files || []); if (isEditingEvent) { setEditingEvent({...editingEvent, galleryFiles: files}); } else { setNewEvent({...newEvent, galleryFiles: files}); } }} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Paperclip size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingEvent ? editingEvent.galleryFiles?.length : newEvent.galleryFiles?.length) ? `${(isEditingEvent ? editingEvent.galleryFiles.length : newEvent.galleryFiles.length)} File(s) Selected` : 'Choose Gallery Images'}</p></div></div></div>
+                          <div className="md:col-span-2"><label className="field-label">Cover Image</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" accept="image/*" onChange={e => openImageCropper(e.target.files[0], file => isEditingEvent ? setEditingEvent({...editingEvent, imageFile: file}) : setNewEvent({...newEvent, imageFile: file}), 16 / 9)} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Image size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingEvent ? editingEvent.imageFile?.name : newEvent.imageFile?.name) || 'Choose Cover Image'}</p></div></div></div>
+                          <div className="md:col-span-2"><label className="field-label">Gallery Images {((isEditingEvent ? editingEvent.category : newEvent.category) === 'PAST_EVENT') ? '(Past Event Only)' : '(Optional)'}</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" accept="image/*" multiple onChange={e => { const files = Array.from(e.target.files || []); const update = isEditingEvent ? setEditingEvent : setNewEvent; update(current => ({...current, galleryFiles: []})); queueImageCrops(files, file => update(current => ({...current, galleryFiles: [...(current.galleryFiles || []), file]})), 4 / 3); }} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Paperclip size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingEvent ? editingEvent.galleryFiles?.length : newEvent.galleryFiles?.length) ? `${(isEditingEvent ? editingEvent.galleryFiles.length : newEvent.galleryFiles.length)} File(s) Selected` : 'Choose Gallery Images'}</p></div></div></div>
                           <div className="md:col-span-2"><label className="field-label">Brief Info</label><textarea required value={isEditingEvent ? editingEvent.description : newEvent.description} onChange={e => isEditingEvent ? setEditingEvent({...editingEvent, description: e.target.value}) : setNewEvent({...newEvent, description: e.target.value})} className="login-field h-24 pt-4" /></div>
                           <div className="md:col-span-2"><label className="field-label">Technical Report</label><textarea required value={isEditingEvent ? editingEvent.full_description : newEvent.full_description} onChange={e => isEditingEvent ? setEditingEvent({...editingEvent, full_description: e.target.value}) : setNewEvent({...newEvent, full_description: e.target.value})} className="login-field h-40 pt-4" /></div>
                        </div>
@@ -977,7 +1159,7 @@ const AdminDashboard = () => {
                       <div><label className="field-label">Role</label><input type="text" required placeholder="Role" value={isEditingHighBoard ? editingHighBoard.role : newHighBoard.role} onChange={e => isEditingHighBoard ? setEditingHighBoard({...editingHighBoard, role: e.target.value}) : setNewHighBoard({...newHighBoard, role: e.target.value})} className="login-field" /></div>
                       <div><label className="field-label">Display Order</label><input type="number" required value={isEditingHighBoard ? (editingHighBoard.display_order ?? 0) : newHighBoard.display_order} onChange={e => isEditingHighBoard ? setEditingHighBoard({...editingHighBoard, display_order: e.target.value}) : setNewHighBoard({...newHighBoard, display_order: e.target.value})} className="login-field" /></div>
                       <div className="md:col-span-2"><label className="field-label">Bio</label><textarea placeholder="Short bio" value={isEditingHighBoard ? (editingHighBoard.bio || '') : newHighBoard.bio} onChange={e => isEditingHighBoard ? setEditingHighBoard({...editingHighBoard, bio: e.target.value}) : setNewHighBoard({...newHighBoard, bio: e.target.value})} className="login-field h-24 pt-4" /></div>
-                      <div className="md:col-span-2"><label className="field-label">Photo</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" accept="image/*" onChange={e => isEditingHighBoard ? setEditingHighBoard({...editingHighBoard, imageFile: e.target.files[0] || null}) : setNewHighBoard({...newHighBoard, imageFile: e.target.files[0] || null})} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Image size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingHighBoard ? editingHighBoard.imageFile?.name : newHighBoard.imageFile?.name) || 'Choose Image'}</p></div></div></div>
+                      <div className="md:col-span-2"><label className="field-label">Photo</label><div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden"><input type="file" accept="image/*" onChange={e => openImageCropper(e.target.files[0], file => isEditingHighBoard ? setEditingHighBoard({...editingHighBoard, imageFile: file}) : setNewHighBoard({...newHighBoard, imageFile: file}), 1)} className="absolute inset-0 opacity-0 cursor-pointer z-20" /><div className="text-center"><Image size={24} className="mx-auto mb-1 text-primary/40"/><p className="text-[10px] font-black text-white/20 uppercase">{(isEditingHighBoard ? editingHighBoard.imageFile?.name : newHighBoard.imageFile?.name) || 'Choose Image'}</p></div></div></div>
                     </div>
                     <button type="submit" className="admin-action-btn w-full justify-center py-5">{loading ? 'Transmitting...' : 'Save High Board Member'}</button>
                   </form>
@@ -985,6 +1167,7 @@ const AdminDashboard = () => {
               </div>
             )}
         </AnimatePresence>
+        {cropRequest && <ImageCropper {...cropRequest} onCancel={() => { setCropRequest(null); setCropQueue([]); }} onComplete={handleCropComplete} />}
       </div>
         </>
     </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import { supabase } from '../lib/supabaseClient'
 import flag from '../assets/img/falg-blue.webp'
 import '../styles/Navbar.css'
 import '../styles/Admin.css'
@@ -34,14 +35,19 @@ const Navbar = () => {
     { name: 'Events', path: '/events' },
   ]
 
-  const handleAdminLogin = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault()
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: loginData.user,
+      password: loginData.pass,
+    })
 
-    if (loginData.user === 'tasbeeh' && loginData.pass === 'zahy') {
+    if (!error && data.user?.app_metadata?.role === 'admin') {
       setLogoClicks(0)
       setShowAdminLogin(false)
       navigate('/dashboard')
     } else {
+      await supabase.auth.signOut()
       setLoginError(true)
       setTimeout(() => setLoginError(false), 2000)
     }
@@ -270,16 +276,16 @@ const Navbar = () => {
                 <form onSubmit={handleAdminLogin}>
                  <div className="space-y-4">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Access Key (User)</p>
+                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Admin Email</p>
                     <input 
                       type="text" 
-                      placeholder="Enter Username"
+                      placeholder="Enter admin email"
                       className={`login-field ${loginError ? 'border-red-500/50 bg-red-500/5' : ''}`}
                       onChange={(e) => setLoginData({...loginData, user: e.target.value})}
                     />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Secure Pass</p>
+                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Password</p>
                     <div className="password-input-wrapper">
                       <input 
                         type={showAdminPassword ? 'text' : 'password'} 
