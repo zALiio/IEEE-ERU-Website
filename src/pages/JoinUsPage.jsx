@@ -17,7 +17,7 @@ const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
 
 const POSITIONS = [
   "Graphic Designing", "Video Editing", "Multi Media", "Marketing", 
-  "Human Resources", "Public Relations", "Operations", "Projects"
+  "Human Resources", "Public Relations", "Operations", "Event Planning"
 ];
 
 const JoinUsPage = () => {

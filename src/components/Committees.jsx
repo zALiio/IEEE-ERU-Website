@@ -95,7 +95,7 @@ const Committees = () => {
       ]
     },
     {
-      name: 'Projects',
+      name: 'Event Planning',
       icon: Rocket,
       summary: 'Research, create, and reinvent innovative ideas for competitions and events within IEEE ERU.',
       responsibilities: [

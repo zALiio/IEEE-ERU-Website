@@ -9,6 +9,10 @@ import {
 } from 'lucide-react';
 import '../styles/Admin.css';
 
+const normalizePositionName = (position) => (
+  position === 'Projects' ? 'Event Planning' : position
+);
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('applications');
   const [loading, setLoading] = useState(false);
@@ -118,7 +122,12 @@ const AdminDashboard = () => {
       // support both `{ data }` and direct arrays returned by mocks
       const data = res && (res.data !== undefined ? res.data : res);
       console.log('fetchApplications result:', res);
-      if (data) setApplications(data);
+      if (data) {
+        setApplications(data.map((application) => ({
+          ...application,
+          position: normalizePositionName(application.position),
+        })));
+      }
     } catch (err) {
       console.error('fetchApplications error:', err);
     }
