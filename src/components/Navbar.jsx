@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
-import { supabase } from '../lib/supabaseClient'
 import flag from '../assets/img/falg-blue.webp'
 import '../styles/Navbar.css'
 import '../styles/Admin.css'
@@ -37,20 +36,28 @@ const Navbar = () => {
 
   const handleAdminLogin = async (e) => {
     e.preventDefault()
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginData.user,
-      password: loginData.pass,
-    })
+    try {
+      const response = await fetch('/api/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginData.user, password: loginData.pass }),
+      })
+      const data = await response.json()
 
-    if (!error && data.user?.app_metadata?.role === 'admin') {
-      setLogoClicks(0)
-      setShowAdminLogin(false)
-      navigate('/dashboard')
-    } else {
-      await supabase.auth.signOut()
+      if (response.ok && data.authenticated) {
+        setLogoClicks(0)
+        setShowAdminLogin(false)
+        navigate('/dashboard')
+        return
+      }
+    } catch {
       setLoginError(true)
       setTimeout(() => setLoginError(false), 2000)
+      return
     }
+
+    setLoginError(true)
+    setTimeout(() => setLoginError(false), 2000)
   }
 
   return (
@@ -276,10 +283,10 @@ const Navbar = () => {
                 <form onSubmit={handleAdminLogin}>
                  <div className="space-y-4">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Admin Email</p>
+                    <p className="text-[10px] font-black text-white/40 uppercase ml-2">Admin Username</p>
                     <input 
                       type="text" 
-                      placeholder="Enter admin email"
+                      placeholder="Enter username"
                       className={`login-field ${loginError ? 'border-red-500/50 bg-red-500/5' : ''}`}
                       onChange={(e) => setLoginData({...loginData, user: e.target.value})}
                     />
