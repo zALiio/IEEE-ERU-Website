@@ -32,6 +32,7 @@
 
 .officers-tree-top {
   @apply grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10;
+  width: 100%;
 }
 
 .officers-tree-connector {
@@ -50,6 +51,7 @@
 
 .officers-tree-lower {
   @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10;
+  width: 100%;
 }
 
 /* TACTICAL CARD: Premium High-Command Aesthetic */
