@@ -37,7 +37,7 @@ const OfficerCard = ({ officer, index, OfficerIcon }) => (
         </div>
         <div className="officer-name">{officer.name}</div>
         <div className="flex items-center justify-between">
-          <span className="officer-credentials">{officer.id}</span>
+          <span className="officer-credentials">OFFICER-{String(officer.number).padStart(1, '0')}</span>
           <div className="flex gap-1">
             <Binary size={10} className="text-primary/40" />
             <ChevronRight size={10} className="text-primary/40 group-hover:text-primary transition-all duration-300" />
@@ -66,6 +66,18 @@ const Officers = () => {
 
   const iconMap = { ShieldCheck, Users, Zap, FileText };
   const normalizeRole = (role) => String(role || '').toUpperCase().replace(/\s+/g, '_');
+  const officerNumber = (role) => {
+    const normalizedRole = normalizeRole(role);
+    if (['BRANCH_CHAIR', 'CHAIRPERSON'].includes(normalizedRole)) return 1;
+    if (['VICE_CHAIR', 'VICE_CHAIRPERSON'].includes(normalizedRole)) return 2;
+    if (normalizedRole === 'SECRETARY') return 3;
+    if (normalizedRole === 'TREASURER') return 4;
+    if (['WEB_MASTER', 'WEBMASTER'].includes(normalizedRole)) return 5;
+    return 99;
+  };
+  const orderedCommand = highCommand
+    .map((officer) => ({ ...officer, number: officerNumber(officer.role) }))
+    .sort((left, right) => left.number - right.number);
 
   const fadeUp = {
     initial: { opacity: 0, y: 30 },
@@ -96,8 +108,8 @@ const Officers = () => {
         {/* Tactical Formation (Grid) */}
         <div className="officers-tree">
           <div className="officers-tree-top">
-            {highCommand
-              .filter((officer) => ['CHAIRPERSON', 'VICE_CHAIRPERSON'].includes(normalizeRole(officer.role)))
+            {orderedCommand
+              .filter((officer) => officer.number <= 2)
               .map((officer, i) => {
                 const OfficerIcon = iconMap[officer.icon] || ShieldCheck;
                 return (
@@ -112,8 +124,8 @@ const Officers = () => {
           </div>
           <div className="officers-tree-connector" />
           <div className="officers-tree-lower">
-            {highCommand
-              .filter((officer) => !['CHAIRPERSON', 'VICE_CHAIRPERSON'].includes(normalizeRole(officer.role)))
+            {orderedCommand
+              .filter((officer) => officer.number > 2)
               .map((officer, i) => {
                 const OfficerIcon = iconMap[officer.icon] || ShieldCheck;
                 return (
