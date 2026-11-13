@@ -8,6 +8,8 @@
   @apply absolute inset-0 z-0;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--color-background);
 }
 
 .hero-overlay-dark {
@@ -67,4 +69,11 @@
 
 .scroll-line {
   @apply w-[1px] h-16 bg-gradient-to-b from-primary to-transparent;
+}
+
+@media (max-width: 640px) {
+  .hero-bg {
+    background-size: contain;
+    background-position: center top;
+  }
 }

@@ -201,6 +201,25 @@
 @media (max-width: 768px) {
   .fixed-portal-wrap { display: flex; }
   .portal-label { display: none; }
+  .nav-action-area { gap: 0.125rem; }
+  .theme-toggle-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+  }
+  .mobile-toggle {
+    padding: 0.625rem;
+    flex-shrink: 0;
+  }
+  .nav-welcome-text {
+    left: 50%;
+    max-width: calc(100% - 10rem);
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    font-size: 0.6875rem;
+    letter-spacing: 0.28em;
+  }
 }
 
 @media (max-width: 480px) {
