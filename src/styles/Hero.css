@@ -73,7 +73,7 @@
 
 @media (max-width: 640px) {
   .hero-bg {
-    background-size: contain;
+    background-size: cover;
     background-position: center top;
   }
 }
