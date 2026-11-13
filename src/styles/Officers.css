@@ -26,8 +26,30 @@
 }
 
 /* OFFICER GRID: Tactical Formation */
-.officers-grid {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10;
+.officers-tree {
+  @apply flex flex-col items-center;
+}
+
+.officers-tree-top {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10;
+}
+
+.officers-tree-connector {
+  @apply relative h-16 w-full max-w-3xl;
+}
+
+.officers-tree-connector::before {
+  content: "";
+  @apply absolute left-1/2 top-0 h-8 w-px -translate-x-1/2 bg-primary/40;
+}
+
+.officers-tree-connector::after {
+  content: "";
+  @apply absolute left-1/2 top-8 h-px w-[calc(100%-25%)] -translate-x-1/2 bg-primary/40;
+}
+
+.officers-tree-lower {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10;
 }
 
 /* TACTICAL CARD: Premium High-Command Aesthetic */
@@ -110,11 +132,15 @@
 /* Tablet & Mobile Adjustments */
 @media (max-width: 1024px) {
   .officers-title { @apply text-6xl; }
-  .officers-grid { @apply gap-6; }
+  .officers-tree-top, .officers-tree-lower { @apply gap-6; }
+  .officers-tree-connector { @apply h-10; }
+  .officers-tree-connector::before { @apply h-5; }
+  .officers-tree-connector::after { @apply top-5; }
 }
 
 @media (max-width: 640px) {
   .officers-section { @apply py-20; }
   .officer-card { @apply max-w-sm mx-auto w-full; }
   .officer-name { @apply text-xl; }
+  .officers-tree-connector::after { @apply w-1/2; }
 }
