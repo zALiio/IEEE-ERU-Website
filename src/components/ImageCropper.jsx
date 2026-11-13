@@ -45,6 +45,10 @@ const ImageCropper = ({ file, aspectRatio = 1, onCancel, onComplete }) => {
     canvas.width = outputWidth
     canvas.height = Math.round(outputWidth / aspectRatio)
     const context = canvas.getContext('2d')
+    if (!context) {
+      onCancel()
+      return
+    }
     context.drawImage(
       image,
       cropWindow.x,
@@ -77,13 +81,17 @@ const ImageCropper = ({ file, aspectRatio = 1, onCancel, onComplete }) => {
           <button type="button" onClick={onCancel} className="text-3xl text-white/20 hover:text-white"><X /></button>
         </div>
 
-        <div className="mx-auto mb-8 flex max-h-[50vh] min-h-64 max-w-full items-center justify-center overflow-hidden rounded-2xl border border-primary/30 bg-black/50 p-3" style={{ aspectRatio }}>
+        <div className="mx-auto mb-8 flex max-h-[50vh] min-h-64 max-w-full items-center justify-center overflow-hidden rounded-2xl border border-primary/30 bg-black/50" style={{ aspectRatio }}>
           {imageUrl && (
             <img
               src={imageUrl}
               alt="Crop preview"
               onLoad={(event) => setImage(event.currentTarget)}
-              className="max-h-full max-w-full object-contain"
+              className="h-full w-full object-cover transition-transform"
+              style={{
+                objectPosition: `${50 + offsetX / 2}% ${50 + offsetY / 2}%`,
+                transform: `scale(${zoom})`,
+              }}
             />
           )}
         </div>

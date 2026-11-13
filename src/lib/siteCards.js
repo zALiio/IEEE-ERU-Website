@@ -32,3 +32,30 @@ export const SITE_CARD_DEFAULTS = {
 }
 
 export const cloneSiteCards = () => JSON.parse(JSON.stringify(SITE_CARD_DEFAULTS))
+
+const isBundledAsset = (imageUrl) => (
+  typeof imageUrl === 'string'
+  && (imageUrl.startsWith('/') || imageUrl.startsWith('./') || imageUrl.includes('/src/assets/') || imageUrl.includes('/assets/'))
+)
+
+export const mergeSiteCardsWithDefaults = (cards) => {
+  const saved = cards || {}
+  const defaultOfficerById = new Map(SITE_CARD_DEFAULTS.officers.map((card) => [card.id, card]))
+
+  return {
+    ...SITE_CARD_DEFAULTS,
+    ...saved,
+    officers: (saved.officers || SITE_CARD_DEFAULTS.officers).map((card) => {
+      const defaultCard = defaultOfficerById.get(card.id)
+      return defaultCard && isBundledAsset(card.image_url)
+        ? { ...defaultCard, ...card, image_url: defaultCard.image_url }
+        : card
+    }),
+    counselor: saved.counselor
+      ? SITE_CARD_DEFAULTS.counselor.image_url && isBundledAsset(saved.counselor.image_url)
+        ? { ...SITE_CARD_DEFAULTS.counselor, ...saved.counselor, image_url: SITE_CARD_DEFAULTS.counselor.image_url }
+        : saved.counselor
+      : SITE_CARD_DEFAULTS.counselor,
+    committees: saved.committees || SITE_CARD_DEFAULTS.committees,
+  }
+}

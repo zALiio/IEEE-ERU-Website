@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { X, ArrowRight, Settings, Rocket, Camera, BarChart3, Palette, Video, Users2, MessageSquare, ShieldCheck, Activity, ChevronRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { getSettingValue } from '../lib/supabaseSettings'
-import { SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards'
+import { mergeSiteCardsWithDefaults, SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards'
 import '../styles/Committees.css'
 
 const iconMap = { Settings, Rocket, Camera, BarChart3, Palette, Video, Users2, MessageSquare, ShieldCheck }
@@ -67,7 +67,7 @@ const Committees = () => {
         console.error('Committee cards fetch failed:', error)
         return
       }
-      const cards = getSettingValue(setting ? [setting] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS)
+      const cards = mergeSiteCardsWithDefaults(getSettingValue(setting ? [setting] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS))
       setData(cards.committees || SITE_CARD_DEFAULTS.committees)
     }
     fetchCards()

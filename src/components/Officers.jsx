@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ShieldCheck, Users, Zap, FileText, ChevronRight, Binary } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { getSettingValue } from '../lib/supabaseSettings';
-import { SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards';
+import { mergeSiteCardsWithDefaults, SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards';
 import '../styles/Officers.css';
 
 const Officers = () => {
@@ -16,7 +16,7 @@ const Officers = () => {
         console.error('High command cards fetch failed:', error);
         return;
       }
-      const cards = getSettingValue(data ? [data] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS);
+      const cards = mergeSiteCardsWithDefaults(getSettingValue(data ? [data] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS));
       setHighCommand(cards.officers || []);
     };
     fetchCards();

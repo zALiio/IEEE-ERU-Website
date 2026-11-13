@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Award, GraduationCap, Microscope, ShieldCheck, Zap, Globe, FileText, Users } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { getSettingValue } from '../lib/supabaseSettings';
-import { SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards';
+import { mergeSiteCardsWithDefaults, SITE_CARD_DEFAULTS, SITE_CARDS_KEY } from '../lib/siteCards';
 import '../styles/Counselor.css';
 
 const Counselor = () => {
@@ -16,7 +16,7 @@ const Counselor = () => {
         console.error('Counselor card fetch failed:', error);
         return;
       }
-      const cards = getSettingValue(data ? [data] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS);
+      const cards = mergeSiteCardsWithDefaults(getSettingValue(data ? [data] : [], SITE_CARDS_KEY, SITE_CARD_DEFAULTS));
       if (cards.counselor) setCounselor(cards.counselor);
     };
     fetchCards();

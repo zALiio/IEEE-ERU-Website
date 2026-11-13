@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { ensureSettingsDefaults, getSettingValue } from '../lib/supabaseSettings';
-import { cloneSiteCards, SITE_CARDS_KEY } from '../lib/siteCards';
+import { cloneSiteCards, mergeSiteCardsWithDefaults, SITE_CARDS_KEY } from '../lib/siteCards';
 import ImageCropper from '../components/ImageCropper';
 import { 
   Users, Search, ExternalLink, 
@@ -173,7 +173,7 @@ const AdminDashboard = () => {
       }
 
       const savedCards = getSettingValue(data, SITE_CARDS_KEY, null);
-      if (savedCards) setSiteCards(savedCards);
+      if (savedCards) setSiteCards(mergeSiteCardsWithDefaults(savedCards));
     }
   };
 
@@ -1092,7 +1092,7 @@ const AdminDashboard = () => {
                       <div className="md:col-span-2">
                         <label className="field-label">Photo</label>
                         <div className="relative h-24 bg-white/[0.02] border border-white/5 border-dashed rounded-xl flex items-center justify-center overflow-hidden">
-                          <input type="file" accept="image/*" onChange={e => openImageCropper(e.target.files[0], file => setEditingSiteCard({ ...editingSiteCard, imageFile: file }), siteCardType === 'counselor' ? 3 / 4 : 1)} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
+                          <input type="file" accept="image/*" onChange={e => openImageCropper(e.target.files[0], file => setEditingSiteCard({ ...editingSiteCard, imageFile: file }), siteCardType === 'counselor' ? 4 / 5 : siteCardType === 'officers' ? 3 / 4 : 1)} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
                           <p className="text-[10px] font-black text-white/20 uppercase">{editingSiteCard.imageFile?.name || 'Choose Image'}</p>
                         </div>
                       </div>
