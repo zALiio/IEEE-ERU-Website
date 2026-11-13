@@ -28,6 +28,7 @@
 /* OFFICER GRID: Tactical Formation */
 .officers-tree {
   @apply flex flex-col items-center;
+  width: 100%;
 }
 
 .officers-tree-top {
