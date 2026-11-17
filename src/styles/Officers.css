@@ -157,6 +157,32 @@
   .officers-tree-lower > :last-child:nth-child(odd) {
     grid-column: 1 / -1;
     justify-self: center;
-    width: calc(50% - 0.5rem);
+    width: 100%;
+    max-width: 10rem;
+  }
+  .officer-card {
+    min-width: 0;
+  }
+  .card-frame {
+    aspect-ratio: 4 / 5;
+    border-radius: 1.75rem;
+  }
+  .officer-overlay {
+    padding: 1rem;
+  }
+  .officer-role-tag {
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 7px;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+  .officer-name {
+    font-size: 1.1rem;
+    line-height: 1.1;
+  }
+  .officer-credentials {
+    font-size: 7px;
+    letter-spacing: 0.15em;
   }
 }
