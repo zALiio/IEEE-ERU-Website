@@ -159,6 +159,8 @@ const Navbar = () => {
           <button 
             className="mobile-toggle"
             onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={mobileMenuOpen}
           >
             <div className="hamburger-staggered">
               <span className="ham-line line-full" />

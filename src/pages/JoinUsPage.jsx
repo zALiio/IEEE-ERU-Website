@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Upload, CheckCircle2, AlertCircle, FileText, Sparkles, Network, User, GraduationCap, Target, Briefcase, Calendar, Clock, Instagram, MessageCircle, Heart, Paperclip, ArrowUpRight } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { ensureSettingsDefaults, getSettingValue } from '../lib/supabaseSettings';
+import { withTimeout } from '../lib/asyncUtils';
 import Meta from '../components/Meta';
 import '../styles/JoinUs.css';
 
@@ -39,7 +40,7 @@ const JoinUsPage = () => {
   useEffect(() => {
       const bootstrap = async () => {
          try {
-            await ensureSettingsDefaults();
+            await withTimeout(ensureSettingsDefaults(), 'Settings request timed out');
             await fetchRecruitmentStatus();
          } catch (error) {
             console.error('Settings bootstrap failed:', error);
@@ -51,7 +52,10 @@ const JoinUsPage = () => {
   }, []);
 
   const fetchRecruitmentStatus = async () => {
-      const { data, error } = await supabase.from('settings').select('key, value');
+      const { data, error } = await withTimeout(
+         supabase.from('settings').select('key, value'),
+         'Recruitment status request timed out',
+      );
 
       if (data) {
          const recruitmentOpen = getSettingValue(data, 'is_recruitment_open', true);
@@ -88,14 +92,17 @@ const JoinUsPage = () => {
       if (cvFile) {
         const fileExt = cvFile.name.split('.').pop();
         const fileName = `${Date.now()}_${formData.firstName}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('cv-uploads').upload(fileName, cvFile);
+        const { error: uploadError } = await withTimeout(
+          supabase.storage.from('cv-uploads').upload(fileName, cvFile),
+          'CV upload timed out',
+        );
         if (uploadError) throw uploadError;
 
         const { data } = supabase.storage.from('cv-uploads').getPublicUrl(fileName);
         publicUrl = data.publicUrl;
       }
 
-      const { error: dbError } = await supabase.from('applications').insert([{
+      const { error: dbError } = await withTimeout(supabase.from('applications').insert([{
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
@@ -112,12 +119,12 @@ const JoinUsPage = () => {
         comments: formData.comments,
         cv_url: publicUrl,
         status: 'pending'
-      }]);
+      }]), 'Application submission timed out');
 
       if (dbError) throw dbError;
 
          try {
-            await supabase.functions.invoke('google-sheets-sync', {
+            await withTimeout(supabase.functions.invoke('google-sheets-sync', {
                body: {
                   source: 'join-us',
                   type: 'application',
@@ -133,7 +140,7 @@ const JoinUsPage = () => {
                      status: 'pending',
                   },
                },
-            });
+            }), 'Application sync timed out');
          } catch (syncError) {
             console.warn('Google Sheets sync skipped:', syncError);
          }
@@ -264,7 +271,7 @@ const JoinUsPage = () => {
                          <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-field" placeholder="Email Address" />
                       </div>
                       <div className="field-group">
-                         <label className="field-label">Phone Frequency</label>
+                         <label className="field-label">Phone Number</label>
                          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="form-field" placeholder="+20 123..." />
                       </div>
                    </div>

@@ -82,7 +82,6 @@ function createMockMembers() {
         committee: row.committee || null,
         role: row.role || 'member',
         points: Number(row.points || 0),
-        password_hash: '123456',
         created_at: new Date().toISOString(),
       }));
     }
@@ -91,9 +90,9 @@ function createMockMembers() {
   }
 
   return [
-    { id: 1, username: 'aliceexample', name: 'Alice Example', committee: 'Robotics', points: 120, role: 'Member', password_hash: '123456', created_at: new Date().toISOString() },
-    { id: 2, username: 'bobexample', name: 'Bob Example', committee: 'Media', points: 80, role: 'Volunteer', password_hash: '123456', created_at: new Date().toISOString() },
-    { id: 3, username: 'zahyadel', name: 'Zahy Adel', committee: 'all', points: 0, role: 'Vice Chairperson', password_hash: '123456', created_at: new Date().toISOString() }
+    { id: 1, username: 'aliceexample', name: 'Alice Example', committee: 'Robotics', points: 120, role: 'Member', created_at: new Date().toISOString() },
+    { id: 2, username: 'bobexample', name: 'Bob Example', committee: 'Media', points: 80, role: 'Volunteer', created_at: new Date().toISOString() },
+    { id: 3, username: 'zahyadel', name: 'Zahy Adel', committee: 'all', points: 0, role: 'Vice Chairperson', created_at: new Date().toISOString() }
   ];
 }
 
@@ -179,7 +178,6 @@ const createMockSupabase = () => {
     };
     const del = async function () {
       if (!this._filter) return { data: null, error: new Error('mock delete requires eq filter') };
-      const before = db[table].length;
       const keep = db[table].filter(r => String(r[this._filter.col]) !== String(this._filter.val));
       db[table].length = 0; db[table].push(...keep);
       return { data: null, error: null };
@@ -190,8 +188,8 @@ const createMockSupabase = () => {
   return {
     from: (table) => tableProxy(table),
     storage: {
-      from: (bucket) => ({
-        upload: async (name, file) => {
+      from: (_bucket) => ({
+        upload: async (_name, _file) => {
           // pretend upload succeeded
           return { error: null };
         },

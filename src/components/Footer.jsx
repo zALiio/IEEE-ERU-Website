@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Facebook, Instagram, Linkedin, Mail, Phone, Send, ShieldCheck, CheckCircle, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { withTimeout } from '../lib/asyncUtils'
 import { useTheme } from '../context/ThemeContext'
 import logoWhite from '../assets/img/logo-white.webp'
 import logoBlue from '../assets/img/logo-blue.webp'
@@ -23,14 +24,17 @@ const Footer = () => {
 
   useEffect(() => {
     const fetchFooterData = async () => {
-      const { data } = await supabase.from('settings').select('value').eq('key', 'footer_settings').single();
-      if (data && data.value) {
-        try {
+      try {
+        const { data } = await withTimeout(
+          supabase.from('settings').select('value').eq('key', 'footer_settings').single(),
+          'Footer settings request timed out',
+        );
+        if (data && data.value) {
           const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
           setFooterData(prev => ({ ...prev, ...parsed }));
-            } catch (error) {
-               console.error('Footer settings parse failed:', error);
-            }
+        }
+      } catch (error) {
+        console.error('Footer settings fetch failed:', error);
       }
     };
     fetchFooterData();
@@ -42,7 +46,10 @@ const Footer = () => {
     
     setStatus('sending');
     try {
-      const { error } = await supabase.from('suggestions').insert([{ content: suggestion }]);
+      const { error } = await withTimeout(
+        supabase.from('suggestions').insert([{ content: suggestion }]),
+        'Suggestion submission timed out',
+      );
       if (error) throw error;
       
       setStatus('success');

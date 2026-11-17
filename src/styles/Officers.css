@@ -32,7 +32,7 @@
 }
 
 .officers-tree-top {
-  @apply grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10;
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10 justify-center;
   width: 100%;
 }
 
@@ -51,7 +51,10 @@
 }
 
 .officers-tree-lower {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 300px));
+  gap: 2rem 2.5rem;
+  justify-content: center;
   width: 100%;
 }
 
@@ -143,7 +146,17 @@
 
 @media (max-width: 640px) {
   .officers-section { @apply py-20; }
-  .officer-card { @apply max-w-sm mx-auto w-full; }
+  .officers-tree-top,
+  .officers-tree-lower {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .officer-card { @apply w-full; }
   .officer-name { @apply text-xl; }
   .officers-tree-connector::after { @apply w-1/2; }
+  .officers-tree-lower > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 0.5rem);
+  }
 }

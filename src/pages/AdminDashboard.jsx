@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { ensureSettingsDefaults, getSettingValue } from '../lib/supabaseSettings';
 import { cloneSiteCards, mergeSiteCardsWithDefaults, SITE_CARDS_KEY } from '../lib/siteCards';
+import { uploadImage } from '../lib/imageUpload';
 import ImageCropper from '../components/ImageCropper';
 import { 
   Users, Search, ExternalLink, 
@@ -231,12 +232,7 @@ const AdminDashboard = () => {
     try {
       let imageUrl = editingSiteCard.image_url;
       if (editingSiteCard.imageFile) {
-        const webp = await convertToWebP(editingSiteCard.imageFile);
-        const name = `${Date.now()}_site_card.webp`;
-        const { error: uploadError } = await supabase.storage.from('member-avatars').upload(name, webp, { contentType: 'image/webp' });
-        if (uploadError) throw uploadError;
-        const { data: publicData } = supabase.storage.from('member-avatars').getPublicUrl(name);
-        imageUrl = publicData.publicUrl;
+        imageUrl = await uploadImage(editingSiteCard.imageFile, 'member-avatars', 'site_card');
       }
 
       const updatedCard = { ...editingSiteCard, image_url: imageUrl };
@@ -420,74 +416,6 @@ const AdminDashboard = () => {
      fetchSuggestions();
   };
 
-  const convertToWebP = (file) => {
-    return new Promise((resolve, reject) => {
-      try {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        const timer = setTimeout(() => {
-          // if conversion takes too long, reject to avoid hanging
-          reject(new Error('Image processing timeout'));
-        }, 20000); // 20s timeout
-
-        reader.onload = (event) => {
-          const img = new window.Image();
-          img.src = event.target.result;
-          img.onload = () => {
-            clearTimeout(timer);
-            try {
-              // Downscale very large images to avoid main-thread freezing
-              const maxDim = 1600;
-              let { width, height } = img;
-              if (width > maxDim || height > maxDim) {
-                const scale = Math.min(maxDim / width, maxDim / height);
-                width = Math.round(width * scale);
-                height = Math.round(height * scale);
-              }
-
-              const canvas = document.createElement('canvas');
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, width, height);
-
-              if (canvas.toBlob) {
-                canvas.toBlob((blob) => {
-                  if (blob) resolve(blob);
-                  else reject(new Error('Conversion produced empty blob'));
-                }, 'image/webp', 0.82);
-              } else {
-                // Fallback for older browsers: use dataURL -> blob
-                const dataUrl = canvas.toDataURL('image/webp', 0.82);
-                const arr = dataUrl.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while (n--) {
-                  u8arr[n] = bstr.charCodeAt(n);
-                }
-                resolve(new Blob([u8arr], { type: mime }));
-              }
-            } catch (err) {
-              reject(err);
-            }
-          };
-
-          img.onerror = () => {
-            clearTimeout(timer);
-            reject(new Error('Failed to load image for processing'));
-          };
-        };
-        reader.onerror = () => {
-          reject(new Error('Failed to read image file'));
-        };
-      } catch (err) {
-        reject(err);
-      }
-    });
-  };
-
   const openImageCropper = (file, onComplete, aspectRatio) => {
     if (!file) return;
     setCropRequest({ file, onComplete, aspectRatio });
@@ -544,12 +472,7 @@ const AdminDashboard = () => {
       setLoading(true); setUploadProgress(20);
       let imageUrl = '';
       if (newMember.imageFile) {
-        const webp = await convertToWebP(newMember.imageFile);
-        const name = `${Date.now()}_member.webp`;
-        const { error } = await supabase.storage.from('member-avatars').upload(name, webp, { contentType: 'image/webp' });
-        if (error) throw error;
-        const { data: { publicUrl } } = supabase.storage.from('member-avatars').getPublicUrl(name);
-        imageUrl = publicUrl;
+        imageUrl = await uploadImage(newMember.imageFile, 'member-avatars', 'member');
       }
       setUploadProgress(70);
       await supabase.from('best_members').insert([{ name: newMember.name, role: newMember.role, unit: newMember.unit, rank: newMember.rank, image_url: imageUrl }]);
@@ -564,12 +487,7 @@ const AdminDashboard = () => {
       setLoading(true); setUploadProgress(30);
       let img = editingMember.image_url;
       if (editingMember.imageFile) {
-        const webp = await convertToWebP(editingMember.imageFile);
-        const name = `${Date.now()}_mem_upd.webp`;
-        const { error } = await supabase.storage.from('member-avatars').upload(name, webp, { contentType: 'image/webp' });
-        if (error) throw error;
-        const { data: { publicUrl } } = supabase.storage.from('member-avatars').getPublicUrl(name);
-        img = publicUrl;
+        img = await uploadImage(editingMember.imageFile, 'member-avatars', 'member_update');
       }
       setUploadProgress(80);
       await supabase.from('best_members').update({ name: editingMember.name, role: editingMember.role, unit: editingMember.unit, rank: editingMember.rank, image_url: img }).eq('id', editingMember.id);
@@ -589,12 +507,7 @@ const AdminDashboard = () => {
 
       let imageUrl = '';
       if (newHighBoard.imageFile) {
-        const webp = await convertToWebP(newHighBoard.imageFile);
-        const name = `${Date.now()}_high_board.webp`;
-        const { error } = await supabase.storage.from('member-avatars').upload(name, webp, { contentType: 'image/webp' });
-        if (error) throw error;
-        const { data: { publicUrl } } = supabase.storage.from('member-avatars').getPublicUrl(name);
-        imageUrl = publicUrl;
+        imageUrl = await uploadImage(newHighBoard.imageFile, 'member-avatars', 'high_board');
       }
 
       setUploadProgress(70);
@@ -634,12 +547,7 @@ const AdminDashboard = () => {
 
       let img = editingHighBoard.image_url;
       if (editingHighBoard.imageFile) {
-        const webp = await convertToWebP(editingHighBoard.imageFile);
-        const name = `${Date.now()}_high_board_upd.webp`;
-        const { error } = await supabase.storage.from('member-avatars').upload(name, webp, { contentType: 'image/webp' });
-        if (error) throw error;
-        const { data: { publicUrl } } = supabase.storage.from('member-avatars').getPublicUrl(name);
-        img = publicUrl;
+        img = await uploadImage(editingHighBoard.imageFile, 'member-avatars', 'high_board_update');
       }
 
       setUploadProgress(80);
@@ -685,12 +593,7 @@ const AdminDashboard = () => {
       setLoading(true); setUploadProgress(10);
       let imageUrl = '';
       if (newEvent.imageFile) {
-        const webp = await convertToWebP(newEvent.imageFile);
-        const name = `${Date.now()}_cover.webp`;
-        const { error } = await supabase.storage.from('event-images').upload(name, webp, { contentType: 'image/webp' });
-        if (error) throw error;
-        const { data: { publicUrl } } = supabase.storage.from('event-images').getPublicUrl(name);
-        imageUrl = publicUrl;
+        imageUrl = await uploadImage(newEvent.imageFile, 'event-images', 'cover');
       }
       setUploadProgress(40);
 
@@ -698,13 +601,7 @@ const AdminDashboard = () => {
       if (newEvent.category === 'PAST_EVENT' && newEvent.galleryFiles.length > 0) {
         const total = newEvent.galleryFiles.length;
         for (let i = 0; i < total; i++) {
-          const webp = await convertToWebP(newEvent.galleryFiles[i]);
-          const name = `${Date.now()}_${i}_gal.webp`;
-          const { error } = await supabase.storage.from('event-images').upload(name, webp, { contentType: 'image/webp' });
-          if (!error) {
-             const { data: { publicUrl } } = supabase.storage.from('event-images').getPublicUrl(name);
-             galleryUrls.push(publicUrl);
-          }
+          galleryUrls.push(await uploadImage(newEvent.galleryFiles[i], 'event-images', `${i}_gallery`));
           setUploadProgress(40 + ((i+1)/total * 50));
         }
       }
@@ -725,25 +622,14 @@ const AdminDashboard = () => {
       setLoading(true); setUploadProgress(20);
       let img = editingEvent.image_url;
       if (editingEvent.imageFile) {
-        const webp = await convertToWebP(editingEvent.imageFile);
-        const name = `${Date.now()}_upd.webp`;
-        const { error } = await supabase.storage.from('event-images').upload(name, webp, { contentType: 'image/webp' });
-        if (error) throw error;
-        const { data: { publicUrl } } = supabase.storage.from('event-images').getPublicUrl(name);
-        img = publicUrl;
+        img = await uploadImage(editingEvent.imageFile, 'event-images', 'update');
       }
       
       let gal = editingEvent.gallery || [];
       if (editingEvent.category === 'PAST_EVENT' && editingEvent.galleryFiles.length > 0) {
         const total = editingEvent.galleryFiles.length;
         for (let i = 0; i < total; i++) {
-          const webp = await convertToWebP(editingEvent.galleryFiles[i]);
-          const name = `${Date.now()}_${i}_upd.webp`;
-          const { error } = await supabase.storage.from('event-images').upload(name, webp, { contentType: 'image/webp' });
-          if (!error) {
-             const { data: { publicUrl } } = supabase.storage.from('event-images').getPublicUrl(name);
-             gal.push(publicUrl);
-          }
+          gal.push(await uploadImage(editingEvent.galleryFiles[i], 'event-images', `${i}_gallery_update`));
           setUploadProgress(50 + ((i+1)/total * 40));
         }
       }
